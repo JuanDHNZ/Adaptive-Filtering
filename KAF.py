@@ -1,13 +1,9 @@
 class QKLMS:
-    def __init__(self, eta=None, epsilon=None, sigma=None):
-        if eta == None:
-          self.eta = 0.9 #Remplazar por algun criterio
-        else:
-          self.eta = eta
-        if epsilon == None:
-          self.epsilon = 10 #Remplazar por algun criterio
-        else:
-          self.epsilon = epsilon
+    def __init__(self, eta=0.9, epsilon=10, sigma=None):
+
+        self.eta = eta #Remplazar por algun criterio
+        self.epsilon = epsilon
+        
         self.sigma = sigma
         self.CB = [] #Codebook
         self.a_coef = [] #Coeficientes
@@ -60,10 +56,16 @@ class QKLMS:
             self.__n_cov.append(1)
             
           self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
+          
+          
           y[i-1] = yi
           i+=1      
           if(i == N-1):
-            return y
+              print(len(self.__CB_cov))
+              for k in range(len(self.__CB_cov)):
+                  print(self.__n_cov[k])
+                  print(self.__CB_cov[k]/self.__n_cov[k])
+              return y
 
     def __output(self,ui):
         from scipy.spatial.distance import cdist
@@ -82,13 +84,10 @@ class QKLMS:
     def __dmahal(self,ui):
         import numpy as np
         from scipy.spatial import distance
-        i = 0
-        dist_m = np.array([])
-        while i < len(self.CB):    
-          # VI = np.linalg.inv(np.trace(np.cov(np.asarray(self.CB)[i], ui))*np.eye(ui.shape[1]))
-          d_i = distance.mahalanobis(np.asarray(self.CB)[i],ui,self.__CB_cov[i]/self.__n_cov[i])
-          dist_m = np.concatenate((dist_m,[d_i]))
-          i+=1
+        #List comprehension
+        dist_m = [distance.mahalanobis(np.asarray(self.CB)[i],ui,self.__CB_cov[i]/self.__n_cov[i]) for i in range(len(self.CB))]
+        dist_m = np.array(dist_m)
+        
         return dist_m
 
     def __naiveCovQ(self,index_cov,ui):
