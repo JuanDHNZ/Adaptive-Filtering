@@ -70,6 +70,7 @@ plt.plot(sigmas,CB_size1, 'b', marker="o", label="QKLMS")
 plt.plot(sigmas,CB_size2, 'm', marker="o", label="QKLMS2")
 plt.legend()
 print("**********************************************")
+print("\nPRUEBA VARIANDO SIGMA DE FORMA LINEAL:")
 print("Codebook Size QKLMS: ", CB_size1[-1])
 print("Codebook Size: QKLMS2", CB_size2[-1])
 print("Sigma de minimo MSE QKLMS = ", sigmas[np.argmin(mse_QKLMS)])
@@ -79,7 +80,7 @@ print("Minimo MSE QKLMS2 = ", mse_QKLMS2[np.argmin(mse_QKLMS2)])
 
 
 # #sigmas logaritmicos
-sigmas = np.logspace(1,4,20)
+sigmas = np.logspace(1,2,30)
 mse_QKLMS = []
 mse_QKLMS2 = []
 CB_size1 = []
@@ -115,6 +116,7 @@ plt.plot(sigmas,CB_size1, 'b', marker="o", label="QKLMS")
 plt.plot(sigmas,CB_size2, 'm', marker="o", label="QKLMS2")
 plt.legend()
 print("**********************************************")
+print("\nPRUEBA VARIANDO SIGMA DE FORMA LOGARITMICA:")
 print("Codebook Size QKLMS: ", CB_size1[-1])
 print("Codebook Size: QKLMS2", CB_size2[-1])
 print("Sigma de minimo MSE QKLMS = ", sigmas[np.argmin(mse_QKLMS)])
@@ -134,16 +136,18 @@ mse_QKLMS2 = []
 CB_size1 = []
 CB_size2 = []
 
-# ep = np.linspace(100,10000,20)
-ep = np.logspace(1,4,30)
-s1 = 1000
-s2 = 10000
+#Completar con grilla variable 
+# ep = np.logspace(1,4,20) 
+ep = np.linspace(1000,10000,30)
+s1 = 10000
+s2 = 5000
 for eps in ep:
     #QKLMS normal
     filtro1 = KAF.QKLMS(epsilon=eps,sigma=s1)
     out1 = filtro1.evaluate(u1,d1)
     mse_QKLMS.append(mean_squared_error(d1, out1))
     CB_size1.append(filtro1.CB_growth[-1])
+    
     #QKLMS con distancia de Mahalanobis
     filtro2 = KAF.QKLMS2(epsilon=eps,sigma=s2)
     out2 = filtro2.evaluate(u1,d1)
@@ -152,23 +156,25 @@ for eps in ep:
     
 plt.figure(4)    
 plt.title("SP500 - Epsilon logaritmico")
-plt.yscale("log")
-# plt.xscale("log")
+#plt.yscale("log")
+plt.xscale("log")
 plt.xlabel("Epsilon")
 plt.ylabel("MSE")
 plt.plot(ep,mse_QKLMS, 'b', marker="o", label="QKLMS")
 plt.plot(ep,mse_QKLMS2, 'm', marker="o", label="QKLMS2")
 plt.legend()
+
 plt.figure(5)    
 plt.title("SP500 - Epsilon logaritmico")
 # plt.yscale("log")
-# plt.xscale("log")
+plt.xscale("log")
 plt.xlabel("Epsilon")
 plt.ylabel("Tamaño CB")
 plt.plot(ep,CB_size1, 'b', marker="o", label="QKLMS")
 plt.plot(ep,CB_size2, 'm', marker="o", label="QKLMS2")
 plt.legend()
 print("**********************************************")
+print("\nPRUEBA VARIANDO EPSILON:")
 print("Codebook Size QKLMS: ", CB_size1[-1])
 print("Codebook Size: QKLMS2", CB_size2[-1])
 print("Epsilon de minimo MSE QKLMS = ", ep[np.argmin(mse_QKLMS)])
@@ -178,7 +184,5 @@ print("Minimo MSE QKLMS2 = ", mse_QKLMS2[np.argmin(mse_QKLMS2)])
 
 
 
-# test = KAF.QKLMS2(sigma=1000, epsilon=10000)
-
-
+#
 

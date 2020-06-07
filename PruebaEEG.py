@@ -11,6 +11,7 @@ import numpy as np
 import KAF
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 import scipy.io as sp
 
 EEG_ch1 = sp.loadmat("datasets/ECoG_ch1.mat")
@@ -24,9 +25,9 @@ ub = signal[-samples-3:-3].reshape(-1,1)
 uc = signal[-samples-4:-4].reshape(-1,1)
 u2 = np.concatenate((ua,ub,uc), axis=1) 
 
+plt.plot(u2)
 
-
-sigmas = np.logspace(1,4,20)
+sigmas = np.logspace(1,5,30)
 mse_QKLMS = []
 mse_QKLMS2 = []
 CB_size1 = []
@@ -36,26 +37,33 @@ for s in sigmas:
     #QKLMS normal
     filtro1 = KAF.QKLMS(epsilon=200,sigma=s)
     out1 = filtro1.evaluate(u2,d2)
-    mse_QKLMS.append(mean_squared_error(d2, out1))
+    mse_QKLMS.append(r2_score(d2, out1))
     CB_size1.append(filtro1.CB_growth[-1])
     #QKLMS con distancia de Mahalanobis
     filtro2 = KAF.QKLMS2(epsilon=200,sigma=s)
     out2 = filtro2.evaluate(u2,d2)
-    mse_QKLMS2.append(mean_squared_error(d2, out2))
+    mse_QKLMS2.append(r2_score(d2, out2))
     CB_size2.append(filtro2.CB_growth[-1])
+    plt.plot(out1[:-5], label="predict")
+    plt.plot(d2, label="target")
+    plt.legend()
+    plt.title("Sigma = " + str(s))   
+    plt.show()
     
 plt.figure(2)    
 plt.title("SP500 - Sigma logaritmico")
-plt.yscale("log")
-# plt.xscale("log")
+# plt.yscale("log")
+plt.xscale("log")
 plt.xlabel("Sigma")
 plt.ylabel("MSE")
+plt.ylim([-1,1.1])
 plt.plot(sigmas,mse_QKLMS, 'b', marker="o", label="QKLMS")
 plt.plot(sigmas,mse_QKLMS2, 'm', marker="o", label="QKLMS2")
 plt.legend()
+
 plt.figure(3)    
 plt.title("SP500 - Sigma logaritmico")
-# plt.yscale("log")
+# plt.yscale("log")o
 # plt.xscale("log")
 plt.xlabel("Sigma")
 plt.ylabel("Tamaño CB")
@@ -67,3 +75,5 @@ print("Codebook Size QKLMS: ", CB_size1[-1])
 print("Codebook Size: QKLMS2", CB_size2[-1])
 print("Sigma de minimo MSE QKLMS = ", sigmas[np.argmin(mse_QKLMS)])
 print("Sigma de minimo MSE QKLMS2 = ", sigmas[np.argmin(mse_QKLMS2)])
+
+
