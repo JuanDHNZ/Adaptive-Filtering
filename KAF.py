@@ -37,8 +37,8 @@ class QKLMS2:
         N,D = u.shape
         Nd,Dd = d.shape
         #Inicializaciones
-        y = np.empty((Nd,Dd))
         if self.initialize:
+            y = np.empty((Nd-1,Dd))
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
             self.__CB_cov.append(np.eye(D)) #Covarianzas
@@ -53,8 +53,9 @@ class QKLMS2:
             if u.shape[0] == 1:                
                 return 0
         else:
+            y = np.empty((Nd,Dd))
             i = 0
-        while True: 
+        while True:
             yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
             d_mahal = self.__dmahal(u[i,:].reshape(-1,D)) #Distancia de Mahalanobis 
             self.testDists.append(d_mahal)
@@ -173,8 +174,8 @@ class QKLMS:
         N,D = u.shape
         Nd,Dd = d.shape
         #Inicializaciones
-        y = np.empty((Nd,Dd))
         if self.initialize:
+            y = np.empty((Nd-1,Dd))
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
             #Salida           
@@ -185,7 +186,8 @@ class QKLMS:
                 return 0
         else:
             i = 0
-        while True: 
+            y = np.empty((Nd,Dd))
+        while True:
             yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
             # self.__newEta(yi,err) #Nuevo eta
             err = d[i] - yi # Error
