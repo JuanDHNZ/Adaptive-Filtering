@@ -31,7 +31,7 @@ u5 = sp500.close.iloc[-samples-6:-6].to_numpy().reshape(-1,1)
 u1 = np.concatenate((u1,u2,u3,u4,u5), axis=1) 
 
 
-sigmas = np.linspace(200,10000,20)
+sigmas = np.linspace(200,10000,60)
 epsln = 200
  
 mse_QKLMS = []
@@ -43,20 +43,20 @@ for s in sigmas:
     #QKLMS normal
     filtro1 = KAF.QKLMS(epsilon=epsln,sigma=s)
     out1 = filtro1.evaluate(u1,d1)
-    mse_QKLMS.append(mean_squared_error(d1, out1))
+    mse_QKLMS.append(r2_score(d1[1:], out1))
     CB_size1.append(filtro1.CB_growth[-1])
     #QKLMS con distancia de Mahalanobis
     filtro2 = KAF.QKLMS2(epsilon=epsln,sigma=s)
     out2 = filtro2.evaluate(u1,d1)
-    mse_QKLMS2.append(mean_squared_error(d1, out2))
+    mse_QKLMS2.append(r2_score(d1[1:], out2))
     CB_size2.append(filtro2.CB_growth[-1])
     
 plt.figure(0)    
 plt.title("SP500 - Sigma lineal")
-plt.yscale("log")
-# plt.xscale("log")
+# plt.yscale("log")
+plt.xscale("log")
 plt.xlabel("Sigma")
-plt.ylabel("MSE")
+plt.ylabel("R2")
 plt.plot(sigmas,mse_QKLMS, 'b', marker="o", label="QKLMS")
 plt.plot(sigmas,mse_QKLMS2, 'm', marker="o", label="QKLMS2")
 plt.legend()
@@ -89,12 +89,12 @@ for s in sigmas:
     #QKLMS normal
     filtro1 = KAF.QKLMS(epsilon=epsln,sigma=s)
     out1 = filtro1.evaluate(u1,d1)
-    mse_QKLMS.append(mean_squared_error(d1, out1))
+    mse_QKLMS.append(r2_score(d1[1:], out1))
     CB_size1.append(filtro1.CB_growth[-1])
     #QKLMS con distancia de Mahalanobis
     filtro2 = KAF.QKLMS2(epsilon=epsln,sigma=s)
     out2 = filtro2.evaluate(u1,d1)
-    mse_QKLMS2.append(mean_squared_error(d1, out2))
+    mse_QKLMS2.append(r2_score(d1[1:], out2))
     CB_size2.append(filtro2.CB_growth[-1])
     
 plt.figure(2)    
@@ -138,7 +138,7 @@ CB_size2 = []
 
 #Completar con grilla variable 
 # ep = np.logspace(1,4,20) 
-ep = np.linspace(1000,10000,30)
+ep = np.linspace(100,100000,100)
 s1 = 10000
 s2 = 5000
 for eps in ep:
