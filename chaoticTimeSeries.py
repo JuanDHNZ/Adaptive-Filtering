@@ -4,8 +4,7 @@ Created on Tue Jun 30 11:51:26 2020
 
 @author: Juan David
 
-Se usan los algorimos desarrollados por
-Obtenidos del repositorio https://github.com/capitanov/chaospy
+Atractores obtenidos del repositorio https://github.com/capitanov/chaospy
 """
 import numpy as np
 

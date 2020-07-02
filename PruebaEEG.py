@@ -15,7 +15,7 @@ from sklearn.metrics import r2_score
 import scipy.io as sp
 
 EEG_ch1 = sp.loadmat("datasets/ECoG_ch1.mat")
-signal = EEG_ch1['ECoGData_ch1'].T
+signal = EEG_ch1['ECoGD ata_ch1'].T
 samples = 500 
 
 d2 = signal[-samples-1:-1]
