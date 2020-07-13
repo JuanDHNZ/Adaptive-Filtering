@@ -29,10 +29,10 @@ samples = 400
 
 d = signal[-samples-1:-1]
 
-u = signal[-samples-2:-2].reshape(-1,1)
-# ub = signal[-samples-3:-3].reshape(-1,1)
-# uc = signal[-samples-4:-4].reshape(-1,1)
-# u = np.concatenate((ua,ub,uc), axis=1) 
+ua = signal[-samples-2:-2].reshape(-1,1)
+ub = signal[-samples-3:-3].reshape(-1,1)
+uc = signal[-samples-4:-4].reshape(-1,1)
+u = np.concatenate((ua,ub,uc), axis=1) 
 plt.figure()
 plt.plot(u)
 
@@ -40,7 +40,7 @@ u_train, u_test, d_train, d_test = train_test_split(u, d, test_size=1/4, random_
 
 filtro = KAF.QKLMS2(epsilon=200, sigma = 1000)
 filtro.fit(u_train,d_train)
-pred = filtro.predict(u_test, d_test)
+pred = filtro.predict(u_test)
 score = filtro.score(d_test, pred)
 
 plt.figure()
@@ -65,10 +65,39 @@ filtro = KAF.QKLMS2()
 mqklms = GridSearchCV(filtro,parameters)
 mqklms.fit(u,d)
 print(mqklms.best_score_)
+print(mqklms.best_estimator_)
 
 import pandas as pd
 df = pd.DataFrame(mqklms.cv_results_)
 df.head(-1)
+
+
+# *****************************************
+# signal = z.reshape(-1,1)
+# samples = 100
+
+# d2 = signal[-samples-1:-1]
+
+# ua = signal[-samples-2:-2].reshape(-1,1)
+# ub = signal[-samples-3:-3].reshape(-1,1)
+# u2 = np.concatenate((ua,ub), axis=1) 
+
+# u2_train = u2[0:74]
+# u2_test = u2[75:99]
+# d2_train = d2[0:74]
+# d2_test = d2[75:99]
+
+# flt = KAF.QKLMS2(epsilon = 100, sigma = 100)
+# flt.fit(u_train,d_train)
+# y_pred = flt.predict(u_test,d_test)
+
+# plt.plot(y_pred, label='predict')
+# plt.plot(d_test, label='target')
+# plt.legend()
+
+
+
+
 
 
 

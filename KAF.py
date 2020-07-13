@@ -216,35 +216,35 @@ class QKLMS2:
                 if self.init_eval:
                     self.init_eval = False  
                 break
-            
             i+=1
+        return
             
-    def predict(self, u , d):
+    def predict(self, u):
         import numpy as np
         #Validaciones
         if not self.fitFlag:
             raise ValueError("Fit method must be runed first")
         if u is None:
             raise ValueError("Parameter u is missing")
-        if d is None:
-            raise ValueError("Parameter d is missing")
-        if len(u) != len(d):
-            raise ValueError("All input arguments must be the same lenght, u shape is {0} and d shape is {1}".format(u.shape, d.shape))
+    
                 
         #Tamaños u y d
         N,D = u.shape
-        Nd,Dd = d.shape
-        y = np.empty((Nd,Dd), dtype=float)
+
+        y = np.empty((N,D), dtype=float)
         i = 0
         
-        while True:           
-            y[i],disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
+        y,d = self.__output(u)
+        # while True:           
+        #     y[i],disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
             
-            if(i == N-1):
-                if self.init_eval:
-                    self.init_eval = False           
-                return y
-            i+=1
+        #     if(i == N-1):
+        #         if self.init_eval:
+        #             self.init_eval = False           
+        #         return np.array(y)
+        #     i+=1
+        print("Tamaño de y : ", y.shape)
+        return y
     
     def score(self, y_target , y_pred):
         #Validaciones
@@ -256,6 +256,9 @@ class QKLMS2:
             raise ValueError("All input arguments must be the same lenght, u shape is {0} and d shape is {1}".format(y_target.shape, y_pred.shape))
                 
         from sklearn.metrics import r2_score
+        print(" ENTRO !")
+        print("y_pred : ", y_pred.shape)
+        print("y_target : ", y_target.shape)
         return r2_score(y_target,y_pred)
     
     def get_params(self, deep=True):
