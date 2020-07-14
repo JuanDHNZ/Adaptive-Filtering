@@ -246,20 +246,20 @@ class QKLMS2:
         print("Tamaño de y : ", y.shape)
         return y
     
-    def score(self, y_target , y_pred):
+    def score(self, y_true=None, y_pred=None):
         #Validaciones
-        if y_target is None:
-            raise ValueError("Parameter y_target is missing")
+        if y_true is None:
+            raise ValueError("Parameter y_true is missing")
         if y_pred is None:
             raise ValueError("Parameter y_pred is missing")
-        if len(y_target) != len(y_pred):
-            raise ValueError("All input arguments must be the same lenght, u shape is {0} and d shape is {1}".format(y_target.shape, y_pred.shape))
+        if len(y_true) != len(y_pred):
+            raise ValueError("All input arguments must be the same lenght, u shape is {0} and d shape is {1}".format(y_true.shape, y_pred.shape))
                 
         from sklearn.metrics import r2_score
         print(" ENTRO !")
         print("y_pred : ", y_pred.shape)
-        print("y_target : ", y_target.shape)
-        return r2_score(y_target,y_pred)
+        print("y_true : ", y_true.shape)
+        return r2_score(y_true,y_pred)
     
     def get_params(self, deep=True):
         # suppose this estimator has parameters "alpha" and "recursive"

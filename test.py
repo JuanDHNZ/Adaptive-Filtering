@@ -36,7 +36,17 @@ u = np.concatenate((ua,ub,uc), axis=1)
 plt.figure()
 plt.plot(u)
 
-u_train, u_test, d_train, d_test = train_test_split(u, d, test_size=1/4, random_state=42)
+train_part = 3/4
+test_part = 1/4
+
+train_set = int(samples * train_part)
+test_set = int(samples * test_part)
+
+u_train = u[:train_set]
+u_test = u[train_set:]
+d_train = d[:train_set]
+d_test = d[train_set:]
+
 
 filtro = KAF.QKLMS2(epsilon=200, sigma = 1000)
 filtro.fit(u_train,d_train)
