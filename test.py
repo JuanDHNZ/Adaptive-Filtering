@@ -51,7 +51,7 @@ d_test = d[train_set:]
 filtro = KAF.QKLMS2(epsilon=200, sigma = 1000)
 filtro.fit(u_train,d_train)
 pred = filtro.predict(u_test)
-score = filtro.score(d_test, pred)
+score = filtro.score(u_test, d_test)
 
 plt.figure()
 plt.plot(pred, label="predict")
@@ -66,40 +66,42 @@ print("Tamaño del codebook = ", len(filtro.CB))
 print("SCORE = ", score)
 
 # GRID SEARCH
-epsilon = np.linspace(100,2000,2)
-sigma = np.linspace(100,2000,2)
+epsilon = np.linspace(100,2000,10)
+sigma = np.linspace(100,2000,10)
+
 parameters ={'epsilon':epsilon, 'sigma':sigma}
 
 from sklearn.model_selection import GridSearchCV
 filtro = KAF.QKLMS2()
-mqklms = GridSearchCV(filtro,parameters)
+cv = [(slice(None), slice(None))]
+mqklms = GridSearchCV(filtro,parameters,cv=cv)
 mqklms.fit(u,d)
-print(mqklms.best_score_)
-print(mqklms.best_estimator_)
 
-import pandas as pd
-df = pd.DataFrame(mqklms.cv_results_)
-df.head(-1)
+a_results = mqklms.cv_results_
 
+print("Mejores parametros : ", mqklms.best_params_)
+print("Mejor score : ", mqklms.best_score_)
 
 # *****************************************
-# signal = z.reshape(-1,1)
-# samples = 100
+signal = z.reshape(-1,1)
+samples = 100
 
-# d2 = signal[-samples-1:-1]
+d2 = signal[-samples-1:-1]
 
-# ua = signal[-samples-2:-2].reshape(-1,1)
-# ub = signal[-samples-3:-3].reshape(-1,1)
-# u2 = np.concatenate((ua,ub), axis=1) 
+ua = signal[-samples-2:-2].reshape(-1,1)
+ub = signal[-samples-3:-3].reshape(-1,1)
+u2 = np.concatenate((ua,ub), axis=1) 
 
-# u2_train = u2[0:74]
-# u2_test = u2[75:99]
-# d2_train = d2[0:74]
-# d2_test = d2[75:99]
+u2_train = u2[0:74]
+u2_test = u2[75:99]
+d2_train = d2[0:74]
+d2_test = d2[75:99]
 
-# flt = KAF.QKLMS2(epsilon = 100, sigma = 100)
-# flt.fit(u_train,d_train)
-# y_pred = flt.predict(u_test,d_test)
+flt = KAF.QKLMS2(epsilon = 2000, sigma = 1000)
+flt.fit(u2_train,d2_train)
+y_pred = flt.predict(u2_test)
+scr = flt.score(u2_test,d2_test.reshape(-1,))
+print("Score = ", scr)
 
 # plt.plot(y_pred, label='predict')
 # plt.plot(d_test, label='target')
