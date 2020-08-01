@@ -12,23 +12,35 @@ def testSystems(samples = 1000, systemType = None):
     
     if systemType == None:
         raise ValueError('System type is missing')
-        
     
     if not systemType in validKeys:
         raise ValueError('Attractor does not exist or is not supported')
     
-def system2(samples):
-    """ x(t) --> Gaussian process with zero mean and unit variance.
+    import numpy as np
+    if systemType == "1":      
+        mean = [0]
+        cov = np.asarray([1]).reshape(1,1)
+        u = np.random.multivariate_normal(mean,cov,size=samples).reshape(-1,)    
+        w = np.asarray([0.227, 0.460, 0.688, 0.460, 0.227])
+        d = np.convolve(u,w)
+        return u,d
     
-        d(t)
-    """
-    import numpy as np 
-    mean = [0]
-    cov = np.asarray([1]).reshape(1,1)
-    x = np.random.multivariate_normal(mean,cov,size=samples)
+    if systemType == "2":
+        s = np.empty((samples,))
+        s[0] = 0.1
+        s[1] = 0.1
+        i = 2
+        while True:
+            s[i] = s[i-1]*(0.8 - 0.5*exp(-s[i-1]**2)) - s[i-2]*
+            (0.3)
+        
+    if systemType == "3":
+        import csv
+        with open('SN_m_tot_V2.csv','r') as file:
+            data = csv.reader(file)
+            
     
-    w = np.asarray([0.227, 0.460, 0.688, 0.460, 0.227])#.reshape(-1,1)
-    d = 
+
     
 
 
