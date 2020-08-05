@@ -256,7 +256,7 @@ class QKLMS2:
                 
         from sklearn.metrics import r2_score
         y_pred = self.predict(X)
-        print("Shapes: \n y:",y.shape," and y_pred:",y_pred.shape)
+        # print("Shapes: \n y:",y.shape," and y_pred:",y_pred.shape)
         return r2_score(y,y_pred)
     
     def get_params(self, deep=True):

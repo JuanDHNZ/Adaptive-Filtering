@@ -110,6 +110,3 @@ print("Score = ", scr)
 
 
 
-
-
-
