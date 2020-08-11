@@ -50,7 +50,7 @@ print("************************************\n")
 import pandas as pd
 sp500 = pd.read_csv("datasets/spx.csv")
 
-samples = 350
+samples = 365
 
 # Señal deseada
 d = sp500.close.iloc[-samples-1:-1].to_numpy().reshape(-1,1)
@@ -65,7 +65,7 @@ u = np.concatenate((u1,u2,u3,u4,u5), axis=1)
 epsilon = np.logspace(2, 5, 20)
 sigma = np.logspace(2, 5, 20)
 
-R2_QKLMS, R2_QKLMS2, CB_size_QKLMS, CB_size_QKLMS2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon)
+sig, eps = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon)
 
 print("\n************************************")
 print("R2 Maximo en QKLMS = ", max(R2_QKLMS))
@@ -73,9 +73,17 @@ print("R2 Maximo en M-QKLMS = ", max(R2_QKLMS2))
 print("************************************\n")
 
 
+sg = sig[8]
+ep = eps[8]
 
+filtro1 = KAF.QKLMS(epsilon=ep,sigma=sg)
+filtro2 = KAF.QKLMS2(epsilon=ep, sigma=sg)
+for i in range(len(d)):
+    out1 = filtro1.evaluate(u[i],d[i])                        
+    out2 = filtro2.evaluate(u[i],d[i])
 
-
+plt.plot(filtro1.CB_growth)
+plt.plot(filtro2.CB_growth)
 
 
 
