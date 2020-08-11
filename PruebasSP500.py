@@ -69,6 +69,8 @@ plt.ylabel("Tamaño CB")
 plt.plot(sigmas,CB_size1, 'b', marker="o", label="QKLMS")
 plt.plot(sigmas,CB_size2, 'm', marker="o", label="QKLMS2")
 plt.legend()
+
+
 print("**********************************************")
 print("\nPRUEBA VARIANDO SIGMA DE FORMA LINEAL:")
 print("Codebook Size QKLMS: ", CB_size1[-1])

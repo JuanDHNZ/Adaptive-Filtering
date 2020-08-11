@@ -61,7 +61,7 @@ class QKLMS2:
             self.initialize = False
             # err = 0.1
             if u.shape[0] == 1:                
-                return 0
+                return
         else:
             y = np.empty((Nd,Dd))
             i = 0
@@ -318,7 +318,7 @@ class QKLMS:
             self.initialize = False
             # err = 0.1
             if u.shape[0] == 1:                
-                return 0
+                return
         else:
             i = 0
             y = np.empty((Nd,Dd))
