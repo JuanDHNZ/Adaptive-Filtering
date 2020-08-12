@@ -50,7 +50,7 @@ print("************************************\n")
 import pandas as pd
 sp500 = pd.read_csv("datasets/spx.csv")
 
-samples = 365
+samples = 100
 
 # Señal deseada
 d = sp500.close.iloc[-samples-1:-1].to_numpy().reshape(-1,1)
@@ -65,64 +65,49 @@ u = np.concatenate((u1,u2,u3,u4,u5), axis=1)
 epsilon = np.logspace(2, 5, 20)
 sigma = np.logspace(2, 5, 20)
 
-sig, eps = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon)
+sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.5)
 
-print("\n************************************")
-print("R2 Maximo en QKLMS = ", max(R2_QKLMS))
-print("R2 Maximo en M-QKLMS = ", max(R2_QKLMS2))
-print("************************************\n")
-
-
-sg = sig[8]
-ep = eps[8]
-
-filtro1 = KAF.QKLMS(epsilon=ep,sigma=sg)
-filtro2 = KAF.QKLMS2(epsilon=ep, sigma=sg)
-for i in range(len(d)):
-    out1 = filtro1.evaluate(u[i],d[i])                        
-    out2 = filtro2.evaluate(u[i],d[i])
-
-plt.plot(filtro1.CB_growth)
-plt.plot(filtro2.CB_growth)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-out1 = []
-out2 = []
-r2_filtro1 = []
-r2_filtro2 = []
-CB_size1 = []
-CB_size2 = []
 from sklearn.metrics import r2_score
-  
-filtro1 = KAF.QKLMS(epsilon=100,sigma=100)
-filtro2 = KAF.QKLMS2(epsilon=100, sigma=100)
-for i in range(len(d)):
-    out1.append(filtro1.evaluate(u[i].reshape(-1,1),d[i].reshape(-1,1)))                        
-    out2.append(filtro2.evaluate(u[i].reshape(-1,1),d[i].reshape(-1,1)))
-                
-#Remove NoneTypes that result from initialization 
-out1 = [j.item() for j in out1 if j is not None]
-out2 = [j.item() for j in out2 if j is not None]
- 
-r2_filtro1.append(r2_score(d[1:], out1))
-r2_filtro2.append(r2_score(d[1:], out2))
-CB_size1.append(len(filtro1.CB))
-CB_size2.append(len(filtro2.CB))
+""" Para  QKLMS """
+pred = []
+qklms = KAF.QKLMS(sigma=sg1,epsilon=ep1)
+for i in range(len(u)):
+   pred.append(qklms.evaluate(u[i],d[i]))
+pred = [i.item() for i in pred if i is not None]
+#Grafico
+plt.title("QKLMS")
+plt.plot(pred[19:], label="Predict")
+plt.plot(d[20:], label="Target")
+plt.legend()
+plt.show()
+plt.title("QKLMS codebook growth")
+plt.plot(qklms.CB_growth)
+plt.show()
+
+R2_qklms = r2_score(d[20:], pred[19:])
+print("R2 QKLMS = ", R2_qklms)
+
+""" Para  QKLMS 2 """
+print("Best Sigma = ", sg1)
+print("Best Epsilon = ", ep1)
+pred = []
+mqklms = KAF.QKLMS(sigma=sg2,epsilon=ep2)
+for i in range(len(u)):
+   pred.append(mqklms.evaluate(u[i],d[i]))
+pred = [i.item() for i in pred if i is not None]
+#Grafico
+plt.title("M-QKLMS")
+plt.plot(pred, label="Predict")
+plt.plot(d[1:], label="Target")
+plt.legend()
+plt.show()
+plt.title("M-QKLMS codebook growth")
+plt.plot(qklms.CB_growth)
+plt.show()
+
+R2_qklms = r2_score(d[20:], pred[19:])
+print("R2 QKLMS = ", R2_qklms)
+
+
 
 

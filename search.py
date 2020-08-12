@@ -8,7 +8,7 @@ Rejilla para probar diferentes sigma y epsilon
 
 """
 
-def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None ):
+def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None, r2_threshold = 0.9):
     if u is None or d is None or sigmaList is None or epsilonList is None:
         raise ValueError("Argument is missing")
 
@@ -71,7 +71,6 @@ def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None ):
         plt.title("M-QKLMS")
     plt.show()
     
-    r2_threshold = 0.9
     best_r2_index1 = [i for i in range(len(r2_filtro1)) if r2_filtro1[i] >= r2_threshold]
     best_r2_index2 = [i for i in range(len(r2_filtro2)) if r2_filtro2[i] >= r2_threshold]
     
@@ -79,50 +78,27 @@ def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None ):
     # best_CB_index1 = [CB_size1[i] for i in best_r2_index1]
     # best_CB_index2 = [CB_size2[i] for i in best_r2_index2]
     best_CB_size = u.shape[0]
-    for i in best_r2_index1:
-        if best_CB_size > CB_size1[i]:
-            best_CB_size1 = CB_size1[i]
-            best_CB_index1 = CB_size1.index(CB_size1[i])
-            
-    best_CB_size = u.shape[0]
-    for i in best_r2_index2:
-        if best_CB_size > CB_size2[i]:
-            best_CB_size = CB_size2[i]
-            best_CB_index2 = CB_size2.index(CB_size2[i])
-            
-    
-    
     
     # for i in range(len(best_r2_index1)):
     #     print("R2 index 1 = ", best_r2_index1[i])
+    # print("**************************************************")
     # for i in range(len(best_r2_index2)):
     #     print("R2 index 2 = ", best_r2_index2[i])
-        
-    # print("Min CB size 1 = ",min(best_CB_index1))
-    # print("Min CB size 2 = ",min(best_CB_index2))
     
-    print("Index best cb 1= ",best_CB_index1)
-    print("Index best cb 2= ",best_CB_index2)
+    for i in best_r2_index1:
+        if CB_size1[i] < best_CB_size: 
+            best_CB_size = CB_size1[i]
+            best_CB_index1 = i
+            
+    best_CB_size = u.shape[0]
+    for i in best_r2_index2:
+        if CB_size2[i] < best_CB_size: 
+            best_CB_size = CB_size2[i]
+            best_CB_index2 = i
     
-    print("Best cb 1= ",CB_size1[best_CB_index1])
-    print("Best cb 2= ",CB_size2[best_CB_index2])
-    
-    # best_param_1 = best_CB_index1.index(min(best_CB_index1))
-    # best_param_2 = best_CB_index2.index(min(best_CB_index2))
-    
-
-    
-    
-    # sigma1 = sigma_track[best_param_1]
-    # epsilon1 = epsilon_track[best_param_1]
-    # sigma2 = sigma_track[best_param_2]
-    # epsilon2 = epsilon_track[best_param_2]
-    
-    #checker
-    print("best score QKLMS = ", r2_filtro1[best_CB_index1])
-    print("best score QKLMS2 = ", r2_filtro2[best_CB_index2])
-    
-    return sigma_track, epsilon_track #sigma1, epsilon1, sigma2, epsilon2
+          
+              
+    return sigma_track[best_CB_index1], epsilon_track[best_CB_index1], sigma_track[best_CB_index2], epsilon_track[best_CB_index2]
     
 
     
