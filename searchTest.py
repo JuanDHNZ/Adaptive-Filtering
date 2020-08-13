@@ -36,13 +36,7 @@ plot_pair(u,d,labelu="input", labeld="target", title="Sistema 1")
 epsilon = np.logspace(-6, 6, 20)
 sigma = np.logspace(-6, 6, 20)
 
-R2_QKLMS, R2_QKLMS2, CB_size_QKLMS, CB_size_QKLMS2 = search.pSearchCurve(u=u.reshape(-1,1), d=d.reshape(-1,1), sigmaList = sigma, epsilonList = epsilon)
-
-print("\n************************************")
-print("R2 Maximo en QKLMS = ", max(R2_QKLMS))
-print("R2 Maximo en M-QKLMS = ", max(R2_QKLMS2))
-print("************************************\n")
-
+sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u.reshape(-1,1), d=d.reshape(-1,1), sigmaList = sigma, epsilonList = epsilon)
 
 
 
@@ -50,7 +44,7 @@ print("************************************\n")
 import pandas as pd
 sp500 = pd.read_csv("datasets/spx.csv")
 
-samples = 100
+samples = 50
 
 # Señal deseada
 d = sp500.close.iloc[-samples-1:-1].to_numpy().reshape(-1,1)
@@ -65,7 +59,7 @@ u = np.concatenate((u1,u2,u3,u4,u5), axis=1)
 epsilon = np.logspace(2, 5, 20)
 sigma = np.logspace(2, 5, 20)
 
-sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.5)
+sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.2)
 
 from sklearn.metrics import r2_score
 """ Para  QKLMS """
@@ -76,15 +70,15 @@ for i in range(len(u)):
 pred = [i.item() for i in pred if i is not None]
 #Grafico
 plt.title("QKLMS")
-plt.plot(pred[19:], label="Predict")
-plt.plot(d[20:], label="Target")
+plt.plot(pred, label="Predict")
+plt.plot(d[1:], label="Target")
 plt.legend()
 plt.show()
 plt.title("QKLMS codebook growth")
 plt.plot(qklms.CB_growth)
 plt.show()
 
-R2_qklms = r2_score(d[20:], pred[19:])
+R2_qklms = r2_score(d[1:], pred)
 print("R2 QKLMS = ", R2_qklms)
 
 """ Para  QKLMS 2 """
@@ -105,7 +99,7 @@ plt.title("M-QKLMS codebook growth")
 plt.plot(qklms.CB_growth)
 plt.show()
 
-R2_qklms = r2_score(d[20:], pred[19:])
+R2_qklms = r2_score(d[1:], pred)
 print("R2 QKLMS = ", R2_qklms)
 
 

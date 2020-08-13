@@ -74,29 +74,24 @@ def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None, r2_threshol
     best_r2_index1 = [i for i in range(len(r2_filtro1)) if r2_filtro1[i] >= r2_threshold]
     best_r2_index2 = [i for i in range(len(r2_filtro2)) if r2_filtro2[i] >= r2_threshold]
     
-    
-    # best_CB_index1 = [CB_size1[i] for i in best_r2_index1]
-    # best_CB_index2 = [CB_size2[i] for i in best_r2_index2]
     best_CB_size = u.shape[0]
-    
-    # for i in range(len(best_r2_index1)):
-    #     print("R2 index 1 = ", best_r2_index1[i])
-    # print("**************************************************")
-    # for i in range(len(best_r2_index2)):
-    #     print("R2 index 2 = ", best_r2_index2[i])
-    
+    best_CB_index1 = None
     for i in best_r2_index1:
         if CB_size1[i] < best_CB_size: 
             best_CB_size = CB_size1[i]
             best_CB_index1 = i
             
     best_CB_size = u.shape[0]
+    best_CB_index2 = None
     for i in best_r2_index2:
         if CB_size2[i] < best_CB_size: 
             best_CB_size = CB_size2[i]
             best_CB_index2 = i
     
-          
+    if(best_CB_index1 is None):
+        raise ValueError("R2 QKLMS under the threshold")
+    if(best_CB_index2 is None):
+        raise ValueError("R2 M-QKLMS under the threshold")
               
     return sigma_track[best_CB_index1], epsilon_track[best_CB_index1], sigma_track[best_CB_index2], epsilon_track[best_CB_index2]
     
