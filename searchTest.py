@@ -190,3 +190,68 @@ sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonLis
 
 parameterTest(u,d,sg1, ep1, sg2, ep2)
 
+
+"""************************************************************************************************************"""
+
+"""************************************************************************************************************"""
+
+"""************************************************************************************************************"""
+
+
+""" PRUEBAS CON ATRACTORES """
+
+"""ATRACTOR DE CHUA"""
+
+import TimeSeriesGenerator as tsg
+
+x, y, z = tsg.chaoticSystem(samples=410,systemType="chua")
+signal = x.reshape(-1,1)
+samples = 400
+
+d = signal[-samples-1:-1]
+
+ua = signal[-samples-2:-2].reshape(-1,1)
+ub = signal[-samples-3:-3].reshape(-1,1)
+uc = signal[-samples-4:-4].reshape(-1,1)
+u = np.concatenate((ua,ub,uc), axis=1) 
+plt.title("Segmento de Atractor de Chua")
+plt.plot(u)
+plt.show()
+
+epsilon = np.logspace(-3, 6, 20)
+sigma = np.logspace(-3, 6, 20)
+
+sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.8)
+
+parameterTest(u,d,sg1, ep1, sg2, ep2)
+
+
+"""ATRACTOR DE LORENZ"""
+
+x, y, z = tsg.chaoticSystem(samples=410,systemType="lorenz")
+signal = x.reshape(-1,1)
+samples = 400
+
+d = signal[-samples-1:-1]
+
+ua = signal[-samples-2:-2].reshape(-1,1)
+ub = signal[-samples-3:-3].reshape(-1,1)
+uc = signal[-samples-4:-4].reshape(-1,1)
+u = np.concatenate((ua,ub,uc), axis=1) 
+plt.title("Segmento de Atractor de lorenz")
+plt.plot(u)
+plt.show()
+
+epsilon = np.logspace(-3, 6, 20)
+sigma = np.logspace(-3, 6, 20)
+
+sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.8)
+
+parameterTest(u,d,sg1, ep1, sg2, ep2)
+
+
+
+
+
+
+
