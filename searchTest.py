@@ -230,7 +230,7 @@ parameterTest(u,d,sg1, ep1, sg2, ep2)
 
 x, y, z = tsg.chaoticSystem(samples=410,systemType="lorenz")
 signal = x.reshape(-1,1)
-samples = 400
+samples = 100
 
 d = signal[-samples-1:-1]
 
