@@ -81,3 +81,32 @@ for i in range(Ns):
     plt.xlabel("Codebook Size")
     plt.title("M-QKLMS")
 plt.show()
+
+
+
+
+
+import KAF
+import numpy as np
+
+import pandas as pd
+sp500 = pd.read_csv("datasets/spx.csv")
+
+samples = 100
+
+# Señal deseada
+d = sp500.close.iloc[-samples-1:-1].to_numpy().reshape(-1,1)
+# Señal de entrada
+u1 = sp500.close.iloc[-samples-2:-2].to_numpy().reshape(-1,1)
+u2 = sp500.close.iloc[-samples-3:-3].to_numpy().reshape(-1,1)
+u3 = sp500.close.iloc[-samples-4:-4].to_numpy().reshape(-1,1)
+u4 = sp500.close.iloc[-samples-5:-5].to_numpy().reshape(-1,1)
+u5 = sp500.close.iloc[-samples-6:-6].to_numpy().reshape(-1,1)
+u = np.concatenate((u1,u2,u3,u4,u5), axis=1)
+
+filt = KAF.QKLMS3(sigma=100, epsilon=100)
+out = filt.evaluate(u,d)
+
+import matplotlib.pyplot as plt
+plt.plot(out)
+plt.plot(d)

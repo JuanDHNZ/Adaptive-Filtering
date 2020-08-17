@@ -66,7 +66,7 @@ class QKLMS3:
             y = np.empty((Nd,Dd))
             i = 0
         while True:
-            yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
+            yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida 
             d_mahal = self.__dmahal(u[i,:].reshape(-1,D)) #Distancia de Mahalanobis 
             self.testDists.append(d_mahal)
             # self.__newEta(yi,err) #Nuevo eta
@@ -109,6 +109,9 @@ class QKLMS3:
         from scipy.spatial.distance import cdist
         import numpy as np
         dist = cdist(np.asarray(self.CB), ui)
+        # dist = self.__dmahal2(ui)
+        # dist = dist.reshape(-1,1)
+        print("Dist = ", dist)
         K = np.exp(-0.5*(dist**2)) #Quitar sigma  y dist con mhalanobis
         y = K.T.dot(np.asarray(self.a_coef))
         return [y,dist]
@@ -118,7 +121,7 @@ class QKLMS3:
         # errp: Error a priori 
         self.eta = (2*errp*y)/(errp**2 + 1)
         return False
-
+    
     def __dmahal(self,ui):
         import numpy as np
         from scipy.spatial import distance
@@ -126,7 +129,15 @@ class QKLMS3:
         #np.asarray(self.CB)[i]
         dist_m = [distance.mahalanobis(self.__CB_cov_sums[k]/self.__n_cov[k],ui,self.__CB_cov[k]/self.__n_cov[k]) for k in range(len(self.CB))]
         dist_m = np.array(dist_m)
-        
+        return dist_m
+
+    def __dmahal2(self,ui):
+        import numpy as np
+        from scipy.spatial import distance
+        #List comprehension
+        #np.asarray(self.CB)[i]
+        dist_m = [distance.mahalanobis(self.CB[k],ui,self.__CB_cov[k]/self.__n_cov[k]) for k in range(len(self.CB))]
+        dist_m = np.array(dist_m)       
         return dist_m
 
     def __naiveCovQ(self,index_cov,ui):
@@ -267,9 +278,12 @@ class QKLMS3:
         for parameter, value in parameters.items():
             setattr(self, parameter, value)
         return self
+    
+    # def kernelMatrix(self, u):
+    #     u=0
+        
 
-
-class QKLMS2:
+class QKLMS2:   
     """Filtro QKLMS que aplica distacia de Mahalanobis en la cuantización"""
     def __init__(self, eta=0.9, epsilon=10, sigma=None):
         self.eta = eta #Remplazar por algun criterio

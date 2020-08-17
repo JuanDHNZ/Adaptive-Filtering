@@ -95,6 +95,8 @@ u = np.concatenate((u1,u2,u3,u4,u5), axis=1)
 epsilon = np.logspace(2, 5, 20)
 sigma = np.logspace(2, 5, 20)
 
+print("\n\nSP500 - Economic timeseries")
+
 sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.9)
 
 parameterTest(u,d,sg1, ep1, sg2, ep2)
@@ -117,6 +119,7 @@ plot_pair(u,d,labelu="input", labeld="target", title="Sistema 1")
 epsilon = np.logspace(-3, 6, 20)
 sigma = np.logspace(-3, 6, 20)
 
+print("\n\nSistema 1")
 sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u.reshape(-1,1), d=d.reshape(-1,1), sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.7)
 
 parameterTest(u.reshape(-1,1),d.reshape(-1,1),sg1, ep1, sg2, ep2)
@@ -157,6 +160,7 @@ d = s[-samples-1:-1].reshape(-1,1)
 epsilon = np.logspace(-3, 6, 20)
 sigma = np.logspace(-3, 6, 20)
 
+print("\n\nSistema 2")
 sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.9)
 
 parameterTest(u,d,sg1, ep1, sg2, ep2)
@@ -165,7 +169,7 @@ parameterTest(u,d,sg1, ep1, sg2, ep2)
 """************************************************************************************************************"""
 
 """Sistema 3 """
-# samples = 400
+samples = 2000
 offset = 10
 s = ts.testSystems(samples=samples+offset , systemType="3")
 s = s.to_numpy()
@@ -185,7 +189,7 @@ d = s[-samples-1:-1].reshape(-1,1 )
 
 epsilon = np.logspace(-3, 6, 20)
 sigma = np.logspace(-3, 6, 20)
-
+print("\n\nSistema 3")
 sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.8)
 
 parameterTest(u,d,sg1, ep1, sg2, ep2)
@@ -203,10 +207,10 @@ parameterTest(u,d,sg1, ep1, sg2, ep2)
 """ATRACTOR DE CHUA"""
 
 import TimeSeriesGenerator as tsg
-
-x, y, z = tsg.chaoticSystem(samples=410,systemType="chua")
+samples = 4000
+x, y, z = tsg.chaoticSystem(samples=samples+10,systemType="chua")
 signal = x.reshape(-1,1)
-samples = 400
+
 
 d = signal[-samples-1:-1]
 
@@ -221,6 +225,8 @@ plt.show()
 epsilon = np.logspace(-3, 6, 20)
 sigma = np.logspace(-3, 6, 20)
 
+print("\n\nAtractor de Chua")
+
 sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.8)
 
 parameterTest(u,d,sg1, ep1, sg2, ep2)
@@ -228,9 +234,10 @@ parameterTest(u,d,sg1, ep1, sg2, ep2)
 
 """ATRACTOR DE LORENZ"""
 
-x, y, z = tsg.chaoticSystem(samples=410,systemType="lorenz")
+samples = 4000
+x, y, z = tsg.chaoticSystem(samples=samples+10,systemType="lorenz")
 signal = x.reshape(-1,1)
-samples = 100
+
 
 d = signal[-samples-1:-1]
 
@@ -245,7 +252,8 @@ plt.show()
 epsilon = np.logspace(-3, 6, 20)
 sigma = np.logspace(-3, 6, 20)
 
-sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.8)
+print("\n\nAtractor de Lorenz")
+sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.0)
 
 parameterTest(u,d,sg1, ep1, sg2, ep2)
 
