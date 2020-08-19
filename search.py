@@ -62,14 +62,14 @@ def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None, r2_threshol
         plt.ylabel("R2")
         plt.xlabel("Codebook Size")
         plt.title("QKLMS")
-    plt.show()    
+        plt.show()    
     for i in range(Ns):    
         plt.plot(CB_size2_[i],r2_filtro2_[i])
         plt.ylim([0,1])
         plt.ylabel("R2")
         plt.xlabel("Codebook Size")
         plt.title("M-QKLMS")
-    plt.show()
+        plt.show()
     
     best_r2_index1 = [i for i in range(len(r2_filtro1)) if r2_filtro1[i] >= r2_threshold]
     best_r2_index2 = [i for i in range(len(r2_filtro2)) if r2_filtro2[i] >= r2_threshold]

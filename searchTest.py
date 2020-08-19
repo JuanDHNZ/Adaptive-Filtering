@@ -207,7 +207,7 @@ parameterTest(u,d,sg1, ep1, sg2, ep2)
 """ATRACTOR DE CHUA"""
 
 import TimeSeriesGenerator as tsg
-samples = 4000
+samples = 2000
 x, y, z = tsg.chaoticSystem(samples=samples+10,systemType="chua")
 signal = x.reshape(-1,1)
 
@@ -234,7 +234,7 @@ parameterTest(u,d,sg1, ep1, sg2, ep2)
 
 """ATRACTOR DE LORENZ"""
 
-samples = 4000
+samples = 100
 x, y, z = tsg.chaoticSystem(samples=samples+10,systemType="lorenz")
 signal = x.reshape(-1,1)
 
