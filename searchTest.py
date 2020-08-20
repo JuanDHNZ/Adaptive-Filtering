@@ -80,7 +80,7 @@ def parameterTest(u,d,sg1,sg2,ep1,ep2):
 import pandas as pd
 sp500 = pd.read_csv("datasets/spx.csv")
 
-samples = 400
+samples = 200
 
 # Señal deseada
 d = sp500.close.iloc[-samples-1:-1].to_numpy().reshape(-1,1)
@@ -95,9 +95,12 @@ u = np.concatenate((u1,u2,u3,u4,u5), axis=1)
 epsilon = np.logspace(2, 5, 20)
 sigma = np.logspace(2, 5, 20)
 
+# epsilon = np.logspace(3, 8, 20)
+# sigma = [1]
+
 print("\n\nSP500 - Economic timeseries")
 
-sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.9)
+sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.1)
 
 parameterTest(u,d,sg1, ep1, sg2, ep2)
 

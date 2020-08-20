@@ -65,10 +65,12 @@ class QKLMS3:
         else:
             y = np.empty((Nd,Dd))
             i = 0
+        dist_mahal_test = []
         while True:
             yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida 
             d_mahal = self.__dmahal(u[i,:].reshape(-1,D)) #Distancia de Mahalanobis 
             self.testDists.append(d_mahal)
+            dist_mahal_test.append(d_mahal) ###TEST
             # self.__newEta(yi,err) #Nuevo eta
             err = d[i] - yi # Error
             #Cuantizacion
@@ -102,16 +104,15 @@ class QKLMS3:
                 #     print(self.__CB_cov[k]/self.__n_cov[k])
                 if self.init_eval:
                     self.init_eval = False           
-                return y
+                return y, dist_mahal_test
             i+=1 
 
     def __output(self,ui):
         from scipy.spatial.distance import cdist
         import numpy as np
-        dist = cdist(np.asarray(self.CB), ui)
-        # dist = self.__dmahal2(ui)
-        # dist = dist.reshape(-1,1)
-        print("Dist = ", dist)
+        # dist = cdist(np.asarray(self.CB), ui)
+        dist = self.__dmahal2(ui)
+        print("Dist shape = ", dist.shape)
         K = np.exp(-0.5*(dist**2)) #Quitar sigma  y dist con mhalanobis
         y = K.T.dot(np.asarray(self.a_coef))
         return [y,dist]
@@ -138,7 +139,7 @@ class QKLMS3:
         #np.asarray(self.CB)[i]
         dist_m = [distance.mahalanobis(self.CB[k],ui,self.__CB_cov[k]/self.__n_cov[k]) for k in range(len(self.CB))]
         dist_m = np.array(dist_m)       
-        return dist_m
+        return dist_m.reshape(-1,1)
 
     def __naiveCovQ(self,index_cov,ui):
         import numpy as np

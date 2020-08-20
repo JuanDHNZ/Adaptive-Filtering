@@ -19,7 +19,7 @@ norm(th).shape
 
 
 
-"""TEST"""
+"""TEST GRAFICAS"""
 
 import KAF
 from sklearn.metrics import r2_score
@@ -34,31 +34,31 @@ CB_size2 = []
 sigma_track = []
 epsilon_track = []
 
-epsilonList = np.logspace(-3, 6, 20)
-sigmaList = np.logspace(-3, 6, 20)
+epsilonList = np.logspace(2, 6, 20)
+sigmaList = np.logspace(2, 6, 20)
            
 for sigma in sigmaList:
-   for epsilon in epsilonList:
-      filtro1 = KAF.QKLMS(epsilon=epsilon,sigma=sigma)
-      filtro2 = KAF.QKLMS2(epsilon=epsilon, sigma=sigma)
-      sigma_track.append(sigma)
-      epsilon_track.append(epsilon)
-      for i in range(len(d)):
-          out1.append(filtro1.evaluate(u[i],d[i]))                        
-          out2.append(filtro2.evaluate(u[i],d[i]))
+    for epsilon in epsilonList:
+        filtro1 = KAF.QKLMS(epsilon=epsilon,sigma=sigma)
+        filtro2 = KAF.QKLMS2(epsilon=epsilon, sigma=sigma)
+        sigma_track.append(sigma)
+        epsilon_track.append(epsilon)
+        for i in range(len(d)):
+            out1.append(filtro1.evaluate(u[i],d[i]))                        
+            out2.append(filtro2.evaluate(u[i],d[i]))
             
-#Remove NoneTypes that result from initialization 
-out1 = [j.item() for j in out1 if j is not None]
-out2 = [j.item() for j in out2 if j is not None]
-     
-r2_filtro1.append(r2_score(d[1:], out1))
-r2_filtro2.append(r2_score(d[1:], out2))
-CB_size1.append(len(filtro1.CB))
-CB_size2.append(len(filtro2.CB))
-out1.clear()
-out2.clear()
+        #Remove NoneTypes that result from initialization 
+        out1 = [j.item() for j in out1 if j is not None]
+        out2 = [j.item() for j in out2 if j is not None]
+             
+        r2_filtro1.append(r2_score(d[1:], out1))
+        r2_filtro2.append(r2_score(d[1:], out2))
+        CB_size1.append(len(filtro1.CB))
+        CB_size2.append(len(filtro2.CB))
+        out1.clear()
+        out2.clear()
     
-    #Para graficar
+#Para graficar
 import numpy as np
 Ns = len(sigmaList)
 Ne = len(epsilonList)
@@ -82,9 +82,26 @@ for i in range(Ns):
     plt.title("M-QKLMS")
 plt.show()
 
+import numpy as np
+import matplotlib.pylab as pl
+
+x = np.linspace(0, 2*np.pi, 64)
+y = np.cos(x) 
+
+pl.figure()
+pl.plot(x,y)
+
+n = 20
+colors = pl.cm.jet(np.linspace(0,1))
+
+for i in range(n):
+    pl.plot(x, i*y, color=colors[i])
+ 
 
 
 
+
+"""TEST QKLMS3"""
 
 import KAF
 import numpy as np
@@ -92,8 +109,7 @@ import numpy as np
 import pandas as pd
 sp500 = pd.read_csv("datasets/spx.csv")
 
-samples = 100
-
+samples = 400
 # Señal deseada
 d = sp500.close.iloc[-samples-1:-1].to_numpy().reshape(-1,1)
 # Señal de entrada
@@ -104,8 +120,8 @@ u4 = sp500.close.iloc[-samples-5:-5].to_numpy().reshape(-1,1)
 u5 = sp500.close.iloc[-samples-6:-6].to_numpy().reshape(-1,1)
 u = np.concatenate((u1,u2,u3,u4,u5), axis=1)
 
-filt = KAF.QKLMS3(sigma=100, epsilon=100)
-out = filt.evaluate(u,d)
+filt = KAF.QKLMS3(epsilon=40000)
+out, dist = filt.evaluate(u,d)
 
 import matplotlib.pyplot as plt
 plt.plot(out)
