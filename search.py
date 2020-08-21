@@ -56,15 +56,18 @@ def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None, r2_threshol
     r2_filtro2_ = np.asarray(r2_filtro2).reshape([Ns,Ne])
     CB_size2_ = np.asarray(CB_size2).reshape([Ns,Ne])
     
+    import matplotlib.pylab as pl
+    colors = pl.cm.jet(np.linspace(0,1,Ns))
+    
     for i in range(Ns):    
-        plt.plot(CB_size1_[i],r2_filtro1_[i])
+        plt.plot(CB_size1_[i],r2_filtro1_[i], color=colors[i])
         plt.ylim([0,1])
         plt.ylabel("R2")
         plt.xlabel("Codebook Size")
         plt.title("QKLMS")
     plt.show()    
     for i in range(Ns):    
-        plt.plot(CB_size2_[i],r2_filtro2_[i])
+        plt.plot(CB_size2_[i],r2_filtro2_[i], color=colors[i])
         plt.ylim([0,1])
         plt.ylabel("R2")
         plt.xlabel("Codebook Size")

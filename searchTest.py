@@ -80,7 +80,7 @@ def parameterTest(u,d,sg1,sg2,ep1,ep2):
 import pandas as pd
 sp500 = pd.read_csv("datasets/spx.csv")
 
-samples = 200
+samples = 400
 
 # Señal deseada
 d = sp500.close.iloc[-samples-1:-1].to_numpy().reshape(-1,1)
@@ -92,15 +92,15 @@ u4 = sp500.close.iloc[-samples-5:-5].to_numpy().reshape(-1,1)
 u5 = sp500.close.iloc[-samples-6:-6].to_numpy().reshape(-1,1)
 u = np.concatenate((u1,u2,u3,u4,u5), axis=1) 
 
-epsilon = np.logspace(2, 5, 20)
-sigma = np.logspace(2, 5, 20)
+epsilon = np.logspace(2, 4, 20)
+sigma = np.logspace(2, 4, 20)
 
 # epsilon = np.logspace(3, 8, 20)
 # sigma = [1]
 
 print("\n\nSP500 - Economic timeseries")
 
-sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.1)
+sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.9)
 
 parameterTest(u,d,sg1, ep1, sg2, ep2)
 
@@ -236,8 +236,8 @@ parameterTest(u,d,sg1, ep1, sg2, ep2)
 
 
 """ATRACTOR DE LORENZ"""
-
-samples = 100
+import TimeSeriesGenerator as tsg
+samples = 400
 x, y, z = tsg.chaoticSystem(samples=samples+10,systemType="lorenz")
 signal = x.reshape(-1,1)
 
@@ -252,11 +252,11 @@ plt.title("Segmento de Atractor de lorenz")
 plt.plot(u)
 plt.show()
 
-epsilon = np.logspace(-3, 6, 20)
-sigma = np.logspace(-3, 6, 20)
+epsilon = np.logspace(0, 5, 20)
+sigma = np.logspace(0, 1, 20)
 
 print("\n\nAtractor de Lorenz")
-sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.0)
+sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.9)
 
 parameterTest(u,d,sg1, ep1, sg2, ep2)
 
