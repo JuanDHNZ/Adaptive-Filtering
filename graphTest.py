@@ -76,16 +76,16 @@ n = len(sigmaList)
 colors = pl.cm.jet(np.linspace(0,1,n))
 
 fig, ax = plt.subplots()
-norm = mpl.colors.Normalize(0,1)
-cmap = mpl.colors.Colormap('jet',256)
+norm = mpl.colors.Normalize(min(sigmaList),max(sigmaList))
 
+#GRAFICOS
 for i in range(Ns):    
     im = ax.plot(CB_size1_[i],r2_filtro1_[i], color=colors[i])
 plt.ylim([0,1])
 plt.ylabel("R2")
 plt.xlabel("Codebook Size")
 plt.title("QKLMS")
-# fig.colorbar(pl.cm.ScalarMappable(norm=norm, cmap=cmap), ax=ax)
+fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap='jet'), ax=ax)
 plt.show()    
 
 fig, ax = plt.subplots()
