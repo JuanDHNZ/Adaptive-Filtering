@@ -174,23 +174,17 @@ class GMM_KLMS:
         import numpy as np
         gmm = GMM(n_components=self.clusters).fit(u)
         self.gmm = gmm
-               
         from scipy.spatial.distance import cdist
         F = [cdist(u, self.gmm.means_[c].reshape(1,-1), 'mahalanobis', VI=self.gmm.precisions_[c]) for c in range(self.gmm.n_components)]
-        print(np.asarray(F).shape)
         F = [np.exp((-f**2)/2) for f in F]
-        print(np.asarray(F).shape)
         phi = np.concatenate(F,axis=1)
         
         from sklearn.linear_model import LinearRegression
-        
         reg = LinearRegression()
         reg.fit(phi,d)
-        
         self.reg = reg
 
-
-            
+           
     def predict(self, u):
         import numpy as np
         #Validaciones
@@ -236,7 +230,7 @@ class GMM_KLMS:
     
     def get_params(self, deep=True):
         # suppose this estimator has parameters "alpha" and "recursive"
-        return {"epsilon": self.epsilon, "sigma": self.sigma}
+        return {"clusters": self.clusters}
 
     def set_params(self, **parameters):
         for parameter, value in parameters.items():

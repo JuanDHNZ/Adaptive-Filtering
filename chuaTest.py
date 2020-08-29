@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import KAF
 
 samples = 1000
-x, y, z = tsg.chaoticSystem(samples=samples+100,systemType="chua")
+x, y, z = tsg.chaoticSystem(samples=samples+100,systemType="")
 
 ds = x[-samples-1:-1]
 
@@ -18,7 +18,6 @@ u1 = x[-samples-2:-2].reshape(-1,1)
 u2 = x[-samples-3:-3].reshape(-1,1)
 u = np.concatenate((u1,u2), axis=1) 
 
-filtro = KAF.QKLMS(epsilon=200,sigma=)
 
 # plt.plot(u)
 # plt.title("Fracmento de atractor de chua")

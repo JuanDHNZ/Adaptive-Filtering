@@ -122,14 +122,14 @@ plt.plot(d, label="target")
 plt.show()
         
 """ PRUEBA QKLMS CON GMMs para diferentes cl"""
-import KAF
-clus = np.linspace(2,400,40)
-for cl in clus:
-    fil = KAF.GMM_KLMS(clusters=round(cl))#clusters=int(cl)
-    fil.fit(u,d)
-    y = fil.predict(u)
-    plt.title("No. de clusters = {}".format(cl))
-    plt.plot(y, label="predict")
-    plt.plot(d, label="target")
-    plt.show()
+# import KAF
+# clus = np.linspace(2,400,40)
+# for cl in clus:
+#     fil = KAF.GMM_KLMS(clusters=cl)#clusters=int(cl)
+#     fil.fit(u,d)
+#     y = fil.predict(u)
+#     plt.title("No. de clusters = {}".format(cl))
+#     plt.plot(y, label="predict")
+#     plt.plot(d, label="target")
+#     plt.show()
 
