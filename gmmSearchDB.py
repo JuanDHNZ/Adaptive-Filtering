@@ -25,7 +25,7 @@ import TimeSeriesGenerator as tsg
 import testSystems
 """NUMERO DE MUESTRAS PARA LAS PRUEBAS"""
 samples = 1000
-clusters = np.linspace(1, samples, int(samples/5))
+clusters = np.linspace(1, samples, int(samples/30))
 
 
 """
