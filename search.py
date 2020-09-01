@@ -8,6 +8,72 @@ Rejilla para probar diferentes sigma y epsilon
 
 """
 
+def draw_ellipse(position, covariance, ax=None, **kwargs):
+    """Draw an ellipse with a given position and covariance"""
+    ax = ax or plt.gca()
+    
+    # Convert covariance to principal axes
+    if covariance.shape == (2, 2):
+        U, s, Vt = np.linalg.svd(covariance)
+        angle = np.degrees(np.arctan2(U[1, 0], U[0, 0]))
+        width, height = 2 * np.sqrt(s)
+    else:
+        angle = 0
+        width, height = 2 * np.sqrt(covariance)
+    
+    # Draw the Ellipse
+    for nsig in range(1, 4):
+        print("WEEE")
+        ax.add_patch(Ellipse(position, nsig * width, nsig * height,
+                             angle, **kwargs))
+        
+def plot_gmm(gmm, X, label=True, ax=None):
+    ax = ax or plt.gca()
+    labels = gmm.fit(X).predict(X)
+    if label:
+        ax.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap='viridis', zorder=2)
+    else:
+        ax.scatter(X[:, 0], X[:, 1], s=40, zorder=2)
+    ax.axis('equal')
+    
+    w_factor = 0.2 / gmm.weights_.max()
+    for pos, covar, w in zip(gmm.means_, gmm.covariances_, gmm.weights_):
+        draw_ellipse(pos, covar, alpha=w * w_factor)
+        # confidence_ellipse(cov=covar, mean=pos, ax=ax, n_std=3, facecolor="red")
+
+import matplotlib.transforms as transforms
+def confidence_ellipse(cov, mean, ax, n_std=3.0, facecolor='none', edgecolor='none', **kwargs):
+    pearson = cov[0, 1]/np.sqrt(cov[0, 0] * cov[1, 1])
+    # Using a special case to obtain the eigenvalues of this
+    # two-dimensionl dataset.
+    ell_radius_x = np.sqrt(1 + pearson)
+    ell_radius_y = np.sqrt(1 - pearson)
+    ellipse = Ellipse((0, 0),
+        width=ell_radius_x * 2,
+        height=ell_radius_y * 2,
+        facecolor=facecolor,
+        edgecolor=edgecolor,
+        **kwargs)
+
+    # Calculating the stdandard deviation of x from
+    # the squareroot of the variance and multiplying
+    # with the given number of standard deviations.
+    scale_x = np.sqrt(cov[0, 0]) * n_std
+    mean_x = mean[0]
+
+    # calculating the stdandard deviation of y ...
+    scale_y = np.sqrt(cov[1, 1]) * n_std
+    mean_y = mean[1]
+
+    transf = transforms.Affine2D() \
+        .rotate_deg(45) \
+        .scale(scale_x, scale_y) \
+        .translate(mean_x, mean_y)
+
+    ellipse.set_transform(transf + ax.transData)
+    return ax.add_patch(ellipse)
+
+
 def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None, r2_threshold = 0.9):
     if u is None or d is None or sigmaList is None or epsilonList is None:
         raise ValueError("Argument is missing")
@@ -99,6 +165,58 @@ def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None, r2_threshol
     return sigma_track[best_CB_index1], epsilon_track[best_CB_index1], sigma_track[best_CB_index2], epsilon_track[best_CB_index2]
     
 
+       
+def parameterTest(u,d,sg1,sg2,ep1,ep2):
+    import KAF
+    import matplotlib.pyplot as plt
+    from sklearn.metrics import r2_score
+    """ Para  QKLMS """
+    print("QKLMS")
+    print("Best Sigma = ", sg1)
+    print("Best Epsilon = ", ep1)
+    pred = []
+    qklms = KAF.QKLMS(sigma=sg1,epsilon=ep1)
+    for i in range(len(u)):
+       pred.append(qklms.evaluate(u[i],d[i]))
+    pred = [i.item() for i in pred if i is not None]
+    #Grafico
+    plt.title("QKLMS")
+    plt.plot(pred, label="Predict")
+    plt.plot(d[1:], label="Target")
+    plt.legend()
+    plt.show()
+    # plt.title("QKLMS codebook growth")
+    # plt.plot(qklms.CB_growth)
+    # plt.show()
     
+    R2_qklms = r2_score(d[1:], pred)
+    print("R2 QKLMS = ", R2_qklms)
+    
+    """ Para  QKLMS 2 """
+    print("\nM-QKLMS")
+    print("Best Sigma = ", sg2)
+    print("Best Epsilon = ", ep2)
+    pred = []
+    mqklms = KAF.QKLMS2(sigma=sg2,epsilon=ep2)
+    for i in range(len(u)):
+       pred.append(mqklms.evaluate(u[i],d[i]))
+    pred = [i.item() for i in pred if i is not None]
+    #Grafico
+    plt.title("M-QKLMS")
+    plt.plot(pred, label="Predict")
+    plt.plot(d[1:], label="Target")
+    plt.legend()
+    plt.show()
+    # plt.title("M-QKLMS codebook growth")
+    # plt.plot(qklms.CB_growth)
+    # plt.show()
+    
+    R2_qklms = r2_score(d[1:], pred)
+    print("R2 QKLMS = ", R2_qklms)
+    
+    
+    print("\nCodebook Sizes:")
+    print("QKLMS = ", len(qklms.CB))
+    print("M-QKLMS = ", len(mqklms.CB)) 
 
 

@@ -535,10 +535,10 @@ class QKLMS2:
         self.sigma = sigma
         self.CB = [] #Codebook
         self.a_coef = [] #Coeficientes
-        self.__CB_cov = [] #Covarianzas
+        self.CB_cov = [] #Covarianzas
         self.__CB_cov_sums = [] #Sumas acumuladas
         self.__CB_cov_prods = [] #Productos acumulados
-        self.__n_cov = [] # n iteraciones en covarianza
+        self.n_cov = [] # n iteraciones en covarianza
         self.CB_growth = [] #Crecimiento del codebook por iteracion
         self.initialize = True #Bandera de inicializacion
         self.init_eval = True
@@ -580,10 +580,10 @@ class QKLMS2:
             y = np.empty((Nd-1,Dd))
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
-            self.__CB_cov.append(np.eye(D)) #Covarianzas
+            self.CB_cov.append(np.eye(D)) #Covarianzas
             self.__CB_cov_sums.append(np.zeros((D,)))
             self.__CB_cov_prods.append(np.zeros((D,D)))
-            self.__n_cov.append(1)
+            self.n_cov.append(1)
             self.testCB_means.append(np.zeros(2,))#Prueba
             #Salida           
             i = 1
@@ -605,15 +605,15 @@ class QKLMS2:
             
             if d_mahal[min_index] <= self.epsilon:
               self.a_coef[min_index] =(self.a_coef[min_index] + self.eta*err).item()
-              self.__CB_cov[min_index] = self.__naiveCovQ(min_index,u[i,:])
-              self.__n_cov[min_index] = self.__n_cov[min_index] + 1
+              self.CB_cov[min_index] = self.__naiveCovQ(min_index,u[i,:])
+              self.n_cov[min_index] = self.n_cov[min_index] + 1
             else:
               self.CB.append(u[i,:])
               self.a_coef.append((self.eta*err).item())
-              self.__CB_cov.append(np.eye(D))
+              self.CB_cov.append(np.eye(D))
               self.__CB_cov_sums.append(np.zeros((D,)))
               self.__CB_cov_prods.append(np.zeros((D,D)))
-              self.__n_cov.append(1)
+              self.n_cov.append(1)
               
               self.testCB_means.append(np.zeros(2,)) #Prueba
             
@@ -625,10 +625,10 @@ class QKLMS2:
                 y[i] = yi
 
             if(i == N-1):
-                # print(len(self.__CB_cov))
-                # for k in range(len(self.__CB_cov)):
+                # print(len(self.CB_cov))
+                # for k in range(len(self.CB_cov)):
                 #     print(self.__n_cov[k])
-                #     print(self.__CB_cov[k]/self.__n_cov[k])
+                #     print(self.CB_cov[k]/self.__n_cov[k])
                 if self.init_eval:
                     self.init_eval = False           
                 return y
@@ -653,7 +653,7 @@ class QKLMS2:
         from scipy.spatial import distance
         #List comprehension
         #np.asarray(self.CB)[i]
-        dist_m = [distance.mahalanobis(self.__CB_cov_sums[k]/self.__n_cov[k],ui,self.__CB_cov[k]/self.__n_cov[k]) for k in range(len(self.CB))]
+        dist_m = [distance.mahalanobis(self.__CB_cov_sums[k]/self.n_cov[k],ui,self.CB_cov[k]/self.n_cov[k]) for k in range(len(self.CB))]
         dist_m = np.array(dist_m)
         
         return dist_m
@@ -662,7 +662,7 @@ class QKLMS2:
         import numpy as np
         sums = np.asarray(self.__CB_cov_sums[index_cov])
         prods = np.asarray(self.__CB_cov_prods[index_cov])
-        n = self.__n_cov[index_cov]
+        n = self.n_cov[index_cov]
         sums = np.sum(np.concatenate((sums.reshape(-1,1),ui.reshape(-1,1)), axis=1),axis=1)
         means = np.outer(sums,sums)/n
         prods += np.outer(ui,ui)
@@ -723,12 +723,12 @@ class QKLMS2:
             
             if d_mahal[min_index] <= self.epsilon:
               self.a_coef[min_index] =(self.a_coef[min_index] + self.eta*err).item()
-              self.__CB_cov[min_index] = self.__naiveCovQ(min_index,u[i,:])
+              self.CB_cov[min_index] = self.__naiveCovQ(min_index,u[i,:])
               self.__n_cov[min_index] = self.__n_cov[min_index] + 1
             else:
               self.CB.append(u[i,:])
               self.a_coef.append((self.eta*err).item())
-              self.__CB_cov.append(np.eye(D))
+              self.CB_cov.append(np.eye(D))
               self.__CB_cov_sums.append(np.zeros((D,)))
               self.__CB_cov_prods.append(np.zeros((D,D)))
               self.__n_cov.append(1)

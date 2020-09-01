@@ -237,7 +237,7 @@ parameterTest(u,d,sg1, ep1, sg2, ep2)
 
 """ATRACTOR DE LORENZ"""
 import TimeSeriesGenerator as tsg
-samples = 400
+samples = 1000
 x, y, z = tsg.chaoticSystem(samples=samples+10,systemType="lorenz")
 signal = x.reshape(-1,1)
 
@@ -252,8 +252,8 @@ plt.title("Segmento de Atractor de lorenz")
 plt.plot(u)
 plt.show()
 
-epsilon = np.logspace(0, 5, 20)
-sigma = np.logspace(0, 1, 20)
+epsilon = np.linspace(1, 100, 40)
+sigma = np.linspace(1,100,40)
 
 print("\n\nAtractor de Lorenz")
 sg1, ep1, sg2, ep2 = search.pSearchCurve(u=u, d=d, sigmaList = sigma, epsilonList = epsilon, r2_threshold=0.9)
