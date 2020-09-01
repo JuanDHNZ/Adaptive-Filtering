@@ -11,7 +11,10 @@ def save_plot(search,clusters,titulo,imagen):
     import matplotlib as mpl
     mpl.rcParams['lines.linewidth'] = 2
     mpl.rcParams['lines.linestyle'] = '--'
-    plt.plot(clusters.astype(np.int64),r2scores,'b', clusters.astype(np.int64),r2scores,'ro' )
+    plt.yticks(np.linspace(0,1,11))
+    plt.xticks(np.linspace(0,samples,11))
+    plt.plot(clusters.astype(np.int64),r2scores,'b')
+    plt.plot(clusters.astype(np.int64),r2scores,'ro',alpha=0.3 )
     plt.ylabel("R2")
     plt.xlabel("Codebook size")
     plt.title(titulo)
@@ -25,8 +28,7 @@ import TimeSeriesGenerator as tsg
 import testSystems
 """NUMERO DE MUESTRAS PARA LAS PRUEBAS"""
 samples = 1000
-clusters = np.linspace(1, samples, int(samples/30))
-
+clusters = np.logspace(0,3,int(samples/20))
 
 """
     ATRACTOR DE LORENZ

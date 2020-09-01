@@ -201,7 +201,6 @@ class GMM_KLMS:
         F = [cdist(u, self.gmm.means_[c].reshape(1,-1), 'mahalanobis', VI=self.gmm.precisions_[c]) for c in range(self.gmm.n_components)]
         F = [np.exp((-f**2)/2) for f in F]
         phi = np.concatenate(F,axis=1)
-        
         return self.reg.predict(phi)
         
         # y,d = self.__output(u)
