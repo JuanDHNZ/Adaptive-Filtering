@@ -9,6 +9,9 @@ Rejilla para probar diferentes sigma y epsilon
 """
 
 def draw_ellipse(position, covariance, ax=None, **kwargs):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.patches import Ellipse
     """Draw an ellipse with a given position and covariance"""
     ax = ax or plt.gca()
     
@@ -28,6 +31,7 @@ def draw_ellipse(position, covariance, ax=None, **kwargs):
                              angle, **kwargs))
         
 def plot_gmm(gmm, X, label=True, ax=None):
+    import matplotlib.pyplot as plt
     ax = ax or plt.gca()
     labels = gmm.fit(X).predict(X)
     if label:
@@ -43,6 +47,9 @@ def plot_gmm(gmm, X, label=True, ax=None):
 
 import matplotlib.transforms as transforms
 def confidence_ellipse(cov, mean, ax, n_std=3.0, facecolor='none', edgecolor='none', **kwargs):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.patches import Ellipse
     pearson = cov[0, 1]/np.sqrt(cov[0, 0] * cov[1, 1])
     # Using a special case to obtain the eigenvalues of this
     # two-dimensionl dataset.
@@ -122,50 +129,53 @@ def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None, r2_threshol
     r2_filtro2_ = np.asarray(r2_filtro2).reshape([Ns,Ne])
     CB_size2_ = np.asarray(CB_size2).reshape([Ns,Ne])
     
-    import matplotlib.pylab as pl
-    colors = pl.cm.jet(np.linspace(0,1,Ns))
+    return r2_filtro1_, CB_size1_, r2_filtro2_, CB_size2_
     
-    for i in range(Ns):    
-        plt.plot(CB_size1_[i],r2_filtro1_[i], color=colors[i])
-        plt.ylim([0,1])
-        plt.ylabel("R2")
-        plt.xlabel("Codebook Size")
-        plt.title("QKLMS")
-    plt.show()    
-    for i in range(Ns):    
-        plt.plot(CB_size2_[i],r2_filtro2_[i], color=colors[i])
-        plt.ylim([0,1])
-        plt.ylabel("R2")
-        plt.xlabel("Codebook Size")
-        plt.title("M-QKLMS")
-    plt.show()
     
-    best_r2_index1 = [i for i in range(len(r2_filtro1)) if r2_filtro1[i] >= r2_threshold]
-    best_r2_index2 = [i for i in range(len(r2_filtro2)) if r2_filtro2[i] >= r2_threshold]
+    # import matplotlib.pylab as pl
+    # colors = pl.cm.jet(np.linspace(0,1,Ns))
     
-    best_CB_size = u.shape[0]
-    best_CB_index1 = None
-    for i in best_r2_index1:
-        if CB_size1[i] < best_CB_size: 
-            best_CB_size = CB_size1[i]
-            best_CB_index1 = i
+    # for i in range(Ns):    
+    #     plt.plot(CB_size1_[i],r2_filtro1_[i], color=colors[i])
+    #     plt.ylim([0,1])
+    #     plt.ylabel("R2")
+    #     plt.xlabel("Codebook Size")
+    #     plt.title("QKLMS")
+    # plt.show()    
+    # for i in range(Ns):    
+    #     plt.plot(CB_size2_[i],r2_filtro2_[i], color=colors[i])
+    #     plt.ylim([0,1])
+    #     plt.ylabel("R2")
+    #     plt.xlabel("Codebook Size")
+    #     plt.title("M-QKLMS")
+    # plt.show()
+    
+    # best_r2_index1 = [i for i in range(len(r2_filtro1)) if r2_filtro1[i] >= r2_threshold]
+    # best_r2_index2 = [i for i in range(len(r2_filtro2)) if r2_filtro2[i] >= r2_threshold]
+    
+    # best_CB_size = u.shape[0]
+    # best_CB_index1 = None
+    # for i in best_r2_index1:
+    #     if CB_size1[i] < best_CB_size: 
+    #         best_CB_size = CB_size1[i]
+    #         best_CB_index1 = i
             
-    best_CB_size = u.shape[0]
-    best_CB_index2 = None
-    for i in best_r2_index2:
-        if CB_size2[i] < best_CB_size: 
-            best_CB_size = CB_size2[i]
-            best_CB_index2 = i
+    # best_CB_size = u.shape[0]
+    # best_CB_index2 = None
+    # for i in best_r2_index2:
+    #     if CB_size2[i] < best_CB_size: 
+    #         best_CB_size = CB_size2[i]
+    #         best_CB_index2 = i
     
-    if(best_CB_index1 is None):
-        raise ValueError("R2 QKLMS under the threshold")
-    if(best_CB_index2 is None):
-        raise ValueError("R2 M-QKLMS under the threshold")
+    # if(best_CB_index1 is None):
+    #     raise ValueError("R2 QKLMS under the threshold")
+    # if(best_CB_index2 is None):
+    #     raise ValueError("R2 M-QKLMS under the threshold")
               
-    return sigma_track[best_CB_index1], epsilon_track[best_CB_index1], sigma_track[best_CB_index2], epsilon_track[best_CB_index2]
+    # return sigma_track[best_CB_index1], epsilon_track[best_CB_index1], sigma_track[best_CB_index2], epsilon_track[best_CB_index2]
     
 
-       
+      
 def parameterTest(u,d,sg1,sg2,ep1,ep2):
     import KAF
     import matplotlib.pyplot as plt
@@ -217,6 +227,20 @@ def parameterTest(u,d,sg1,sg2,ep1,ep2):
     
     print("\nCodebook Sizes:")
     print("QKLMS = ", len(qklms.CB))
-    print("M-QKLMS = ", len(mqklms.CB)) 
+    print("M-QKLMS = ", len(mqklms.CB))
+    
+
+def searchGMMCurve(u=None,d=None,clusters=None):
+    import numpy as np
+    cl = clusters.astype(np.int64)
+    parameters ={'clusters':cl}  
+    import KAF
+    from sklearn.model_selection import GridSearchCV
+    filtro = KAF.GMM_KLMS()
+    cv = [(slice(None), slice(None))]
+    gmmklms = GridSearchCV(filtro,parameters,cv=cv)
+    gmmklms.fit(u,d)
+    return gmmklms
+
 
 

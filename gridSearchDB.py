@@ -35,3 +35,20 @@ def gridSearchDB(u = None, d = None, cl = None):
     return gmmklms
     # print("Mejores parametros : ", mqklms.best_params_)
     # print("Mejor score : ", mqklms.best_score_)
+
+def save_plot(search,clusters,titulo,imagen):
+    import matplotlib.pyplot as plt
+    r2scores = search.cv_results_['mean_test_score']
+    import matplotlib as mpl
+    mpl.rcParams['lines.linewidth'] = 2
+    mpl.rcParams['lines.linestyle'] = '--'
+    plt.yticks(np.linspace(0,1,11))
+    plt.xticks(np.linspace(0,samples,11))
+    plt.plot(clusters.astype(np.int64),r2scores,'b')
+    plt.plot(clusters.astype(np.int64),r2scores,'ro',alpha=0.3 )
+    plt.ylabel("R2")
+    plt.xlabel("Codebook size")
+    plt.title(titulo)
+    plt.grid()
+    plt.savefig("QKLMSvsGMM/" + imagen + '.png', dpi = 300)
+    plt.show()
