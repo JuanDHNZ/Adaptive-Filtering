@@ -190,6 +190,7 @@ cp.dbPlot(u,d,sgmList,epList,r2_umbral=0.8,clusters=cl,testName="sistema 2")
     d = Instante actual
     
 """
+import testSystems
 s = testSystems.testSystems(samples=samples+10 , systemType="3")
 s = s.to_numpy()
 
@@ -205,9 +206,11 @@ epList = np.logspace(0, 3, 40)
 sgmList = np.logspace(0,3,20)
 cl = np.linspace(1,1000,200)
 
-cp.dbPlot(u,d,sgmList,epList,r2_umbral=0.8,clusters=cl,testName="sistema 3")
+# cp.dbPlot(u,d,sgmList,epList,r2_umbral=0.8,clusters=cl,testName="sistema 3")
+cp.dbPlot2(u,d,clusters=cl,testName="sistema 3")
 
 """ PRETESTING"""
+
 
 # import KAF
 # fil = KAF.QKLMS(sigma=100, epsilon=1000)

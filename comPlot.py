@@ -9,6 +9,12 @@ Graficas de comparacion
 """
 
 def dbPlot(u, d, sgm, eps, r2_umbral,clusters, testName):
+    """
+    Comparativa entre QKLMS tradicional y QKLMS usando GMMs:           
+        - Se hace gridSearch a los parametros de QKLMS
+        - Se entrena el GMM-QKLMS
+        - Se grafican las curvas           
+    """
     #Busqueda de parametros en QKLMS y M-QKLMS
     import search
     r2_1, cb_1, r2_2, cb_2 = search.pSearchCurve(u=u,d=d,sigmaList=sgm,epsilonList=eps,r2_threshold=r2_umbral)
@@ -46,5 +52,45 @@ def dbPlot(u, d, sgm, eps, r2_umbral,clusters, testName):
     plt.plot(clusters.astype(np.int64),r2gmm,'ro',alpha=0.3)
     plt.savefig("pruebasGMM/gmmVsqklms/"+ testName +".png", dpi = 300)
     plt.legend()
-    plt.show()  
+    plt.show()
+    
+def dbPlot2(u,d,clusters, testName):
+    """Comparativa entre GMM-QKLMS y BGMM-QKLMS"""
+    import search
+    import numpy as np
+    gmm = search.searchGMMCurve(u,d,clusters)
+    
+    #GRAFICAS :
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    #GMM
+    r2gmm = gmm.cv_results_['mean_test_score']
+    # mpl.rcParams['lines.linewidth'] = 2
+    # mpl.rcParams['lines.linestyle'] = '--'
+    # plt.yticks(np.linspace(0,1,11))
+    # plt.xticks(np.linspace(0,samples,11))
+    plt.plot(clusters.astype(np.int64),r2gmm,'m', label="GMM")
+    plt.plot(clusters.astype(np.int64),r2gmm,'ro',alpha=0.3)
+    plt.savefig("pruebasGMM/GMM_Vs_BGMM/"+ testName +".png", dpi = 300)
+    plt.legend()
+    plt.show()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
