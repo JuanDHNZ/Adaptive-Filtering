@@ -1,7 +1,8 @@
 class BGMM_KLMS:
     """Filtro QKLMS que aplica distacia de Mahalanobis en la cuantización y en el kernel"""
-    def __init__(self, clusters = None, eta = 0.9):
+    def __init__(self, clusters = 1, wcp = 1, eta = 0.9):
         self.clusters = clusters
+        self.wcp = wcp
         self.eta = eta #Tasa de aprendizaje
         self.CB = [] #Codebook
         self.a_coef = [] #Coeficientes
@@ -170,12 +171,12 @@ class BGMM_KLMS:
         N,D = u.shape
         
         #GMM fit
-        from sklearn.mixture import GaussianMixture as GMM
+        from sklearn.mixture import BayesianGaussianMixture as BGMM
         import numpy as np
-        gmm = GMM(n_components=self.clusters).fit(u)
-        self.gmm = gmm
+        bgmm = BGMM(n_components=self.clusters, weight_concentration_prior=self.wcp, max_iter=500).fit(u)
+        self.bgmm = bgmm
         from scipy.spatial.distance import cdist
-        F = [cdist(u, self.gmm.means_[c].reshape(1,-1), 'mahalanobis', VI=self.gmm.precisions_[c]) for c in range(self.gmm.n_components)]
+        F = [cdist(u, self.bgmm.means_[c].reshape(1,-1), 'mahalanobis', VI=self.bgmm.precisions_[c]) for c in range(self.bgmm.n_components)]
         F = [np.exp((-f**2)/2) for f in F]
         phi = np.concatenate(F,axis=1)
         
@@ -198,7 +199,7 @@ class BGMM_KLMS:
         y = np.empty((N,), dtype=float)
         i = 0      
         from scipy.spatial.distance import cdist
-        F = [cdist(u, self.gmm.means_[c].reshape(1,-1), 'mahalanobis', VI=self.gmm.precisions_[c]) for c in range(self.gmm.n_components)]
+        F = [cdist(u, self.bgmm.means_[c].reshape(1,-1), 'mahalanobis', VI=self.bgmm.precisions_[c]) for c in range(self.bgmm.n_components)]
         F = [np.exp((-f**2)/2) for f in F]
         phi = np.concatenate(F,axis=1)
         return self.reg.predict(phi)
@@ -229,7 +230,7 @@ class BGMM_KLMS:
     
     def get_params(self, deep=True):
         # suppose this estimator has parameters "alpha" and "recursive"
-        return {"clusters": self.clusters}
+        return {"wcp":self.wcp,"clusters": self.clusters}# 
 
     def set_params(self, **parameters):
         for parameter, value in parameters.items():

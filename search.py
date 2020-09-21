@@ -243,4 +243,15 @@ def searchGMMCurve(u=None,d=None,clusters=None):
     return gmmklms
 
 
+def searchBGMMCurve(u=None,d=None,clusters=None, wpc=None):
+    import numpy as np
+    cl = clusters.astype(np.int64)
+    parameters ={'wpc':wpc,'clusters':cl}  
+    import KAF
+    from sklearn.model_selection import GridSearchCV
+    filtro = KAF.BGMM_KLMS()
+    cv = [(slice(None), slice(None))]
+    gmmklms = GridSearchCV(filtro,parameters,cv=cv)
+    gmmklms.fit(u,d)
+    return gmmklms
 

@@ -54,14 +54,16 @@ def dbPlot(u, d, sgm, eps, r2_umbral,clusters, testName):
     plt.legend()
     plt.show()
     
-def dbPlot2(u,d,clusters, testName):
+def dbPlot2(u,d,clusters_gmm, clusters_bgmm, wcp, testName):
     """Comparativa entre GMM-QKLMS y BGMM-QKLMS"""
     import search
     import numpy as np
-    gmm = search.searchGMMCurve(u,d,clusters)
+    gmm = search.searchGMMCurve(u,d,clusters_gmm)
+    
+    bgmm = search.searchBGMMCurve(u,d,clusters_bgmm,wcp)
     
     #GRAFICAS :
-    import matplotlib as mpl
+    # import matplotlib as mpl
     import matplotlib.pyplot as plt
     #GMM
     r2gmm = gmm.cv_results_['mean_test_score']
@@ -69,11 +71,44 @@ def dbPlot2(u,d,clusters, testName):
     # mpl.rcParams['lines.linestyle'] = '--'
     # plt.yticks(np.linspace(0,1,11))
     # plt.xticks(np.linspace(0,samples,11))
-    plt.plot(clusters.astype(np.int64),r2gmm,'m', label="GMM")
-    plt.plot(clusters.astype(np.int64),r2gmm,'ro',alpha=0.3)
-    plt.savefig("pruebasGMM/GMM_Vs_BGMM/"+ testName +".png", dpi = 300)
-    plt.legend()
+    plt.ylim([0,1])
+    plt.ylabel("R2")
+    plt.xlabel("Codebook Size")
+    plt.plot(clusters_gmm.astype(np.int64),r2gmm,'m', label="GMM")
+    plt.plot(clusters_gmm.astype(np.int64),r2gmm,'ro',alpha=0.3)
     plt.show()
+    r2bgmm = bgmm.cv_results_['mean_test_score']
+    Mcl = len(clusters_bgmm)
+    Nwcp = len(wcp)
+    rtest = r2bgmm.reshape(Mcl,Nwcp)
+    rtest = rtest.T
+    print("result shape: {}".format(rtest.shape))
+    
+    import matplotlib as mpl
+    import matplotlib.pylab as pl
+    n = len(wcp)
+    colors = pl.cm.jet(np.linspace(0,1,n))
+    fig, ax = plt.subplots()
+    norm = mpl.colors.Normalize(min(wcp),max(wcp)) 
+    for i in range(rtest.shape[0]):
+        plt.plot(clusters_bgmm,rtest[i,:], color=colors[i])
+    cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap='jet'), ax=ax)
+    cbar.set_label('wcp')
+    plt.ylabel("R2")
+    plt.xlabel("Codebook Size")
+    plt.title("Bayesian GMM")
+    plt.ylim([0,1])
+    plt.savefig("pruebasGMM/GMM_Vs_BGMM/"+ testName +".png", dpi = 300)
+    plt.show()
+    
+    # print("r2 shape = ", r2bgmm.shape)
+    # print("r2 shape = ", r2bgmm.shape)
+    # plt.plot(clusters_bgmm.astype(np.int64),r2bgmm,'c', label="BGMM")
+    # plt.plot(clusters_bgmm.astype(np.int64),r2bgmm,'bo',alpha=0.3)
+    
+    # plt.savefig("pruebasGMM/GMM_Vs_BGMM/"+ testName +".png", dpi = 300)
+    # plt.legend()
+    # plt.show()
     
     
     
