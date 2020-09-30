@@ -1,6 +1,7 @@
 class BGMM_KLMS:
     """Filtro QKLMS que aplica distacia de Mahalanobis en la cuantización y en el kernel"""
-    def __init__(self, clusters = 1, wcp = 1, eta = 0.9):
+    def __init__(self, clusters = 1, wcp = 1, eta = 0.9, max_iter = 500):
+        self.max_iter = max_iter
         self.clusters = clusters
         self.wcp = wcp
         self.eta = eta #Tasa de aprendizaje
@@ -230,7 +231,7 @@ class BGMM_KLMS:
     
     def get_params(self, deep=True):
         # suppose this estimator has parameters "alpha" and "recursive"
-        return {"wcp":self.wcp,"clusters": self.clusters}# 
+        return {"wcp":self.wcp,"clusters":self.clusters}# 
 
     def set_params(self, **parameters):
         for parameter, value in parameters.items():

@@ -54,13 +54,13 @@ def dbPlot(u, d, sgm, eps, r2_umbral,clusters, testName):
     plt.legend()
     plt.show()
     
-def dbPlot2(u,d,clusters_gmm, clusters_bgmm, wcp, testName):
+def dbPlot2(u,d,clusters_gmm, wcp, testName):
     """Comparativa entre GMM-QKLMS y BGMM-QKLMS"""
     import search
     import numpy as np
     gmm = search.searchGMMCurve(u,d,clusters_gmm)
     
-    bgmm = search.searchBGMMCurve(u,d,clusters_bgmm,wcp)
+    bgmm = search.searchBGMMCurve(u,d,wcp)
     
     #GRAFICAS :
     # import matplotlib as mpl
@@ -78,7 +78,7 @@ def dbPlot2(u,d,clusters_gmm, clusters_bgmm, wcp, testName):
     plt.plot(clusters_gmm.astype(np.int64),r2gmm,'ro',alpha=0.3)
     plt.show()
     r2bgmm = bgmm.cv_results_['mean_test_score']
-    Mcl = len(clusters_bgmm)
+    Mcl = u.shape[0]
     Nwcp = len(wcp)
     rtest = r2bgmm.reshape(Mcl,Nwcp)
     rtest = rtest.T
@@ -110,14 +110,77 @@ def dbPlot2(u,d,clusters_gmm, clusters_bgmm, wcp, testName):
     # plt.legend()
     # plt.show()
     
+       
+def dbPlot3(u,d,clusters_gmm, wcp, testName):
+    """Comparativa entre GMM-QKLMS y BGMM-QKLMS"""
+    import search
+    import numpy as np
+    gmm = search.searchGMMCurve(u,d,clusters_gmm)  
+    cl = u.shape[0]
+    n_comps, r2bgmm = search.searchBGMM(u,d,wcp)
+    
+    #GRAFICAS :
+    # import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    #GMM
+    r2gmm = gmm.cv_results_['mean_test_score']
+  
+    import matplotlib as mpl
+    import matplotlib.pylab as pl
+    n = len(wcp)
+    colors = pl.cm.jet(np.linspace(0,1,n))
+    fig, ax = plt.subplots()
+    
+    fig = plt.gcf()
+    fig.set_size_inches(18.5, 10.5)
+    
+    norm = mpl.colors.Normalize(min(wcp),max(wcp)) 
+    for i in range(n):
+        plt.scatter(n_comps[i],r2bgmm[i], color=colors[i], alpha=0.5)
+
+    plt.ylabel("R2")
+    plt.xlabel("Codebook Size")
+    plt.plot(clusters_gmm.astype(np.int64),r2gmm,'m', label="GMM")
+    plt.plot(clusters_gmm.astype(np.int64),r2gmm,'ro',alpha=0.3)
+    
+    cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap='jet'), ax=ax)
+    cbar.set_label('WCP')
+    plt.ylabel("R2")
+    plt.xlabel("Codebook SizSe")
+    plt.title(testName)
+    plt.ylim([0,1])
+    plt.ylim([0,1])
+    plt.grid()
+    plt.legend()
+    plt.savefig("pruebasGMM/GMM_Vs_BGMM/t2/"+ testName +".png", dpi = 300)
+    plt.show()
     
     
+def dbPlot4(u,d,clusters_gmm, wcp, testName):
+    """
+    Mejor resultado entre GMM-QKLMS y BGMM-QKLMS usando un criterio de distancia.
+    
+    Se mide la distacia del resultado obtenido respecto al resultado ideal de R2 = 1 y codebookSize = 0
+    
+    Se retorna el mejor resultado para cada modelo por prueba realizada
+    
+    """
+    import search
+    import numpy as np
+    gmm = search.searchGMMCurve(u,d,clusters_gmm)  
+    n_comps, r2bgmm = search.searchBGMM(u,d,wcp)    
+    #GMM
+    r2gmm = gmm.cv_results_['mean_test_score']   
+    
+    #Referencia
+    ref = np.array((0,1))
+    gmm_results = np.concatenate((clusters_gmm.reshape(-1,1),r2gmm.reshape(-1,1)),axis=1)
+    bgmm_results = np.concatenate((n_comps.reshape(-1,1),r2bgmm.reshape(-1,1)),axis=1)
+    from scipy.spatial.distance import cdist
     
     
-    
-    
-    
-    
+    xs = 0 
+
     
     
     

@@ -81,6 +81,15 @@ def confidence_ellipse(cov, mean, ax, n_std=3.0, facecolor='none', edgecolor='no
     return ax.add_patch(ellipse)
 
 
+def startTimer():
+    import time
+    return time.time()
+
+def stopTimer(startTime):
+    import time
+    return time.time() - startTime
+
+
 def pSearchCurve(u=None,d=None,sigmaList = None, epsilonList = None, r2_threshold = 0.9):
     if u is None or d is None or sigmaList is None or epsilonList is None:
         raise ValueError("Argument is missing")
@@ -243,10 +252,9 @@ def searchGMMCurve(u=None,d=None,clusters=None):
     return gmmklms
 
 
-def searchBGMMCurve(u=None,d=None,clusters=None, wpc=None):
-    import numpy as np
-    cl = clusters.astype(np.int64)
-    parameters ={'wpc':wpc,'clusters':cl}  
+def searchBGMMCurve(u=None,d=None, wpc=None):
+    cl = [u.shape[0]]
+    parameters ={'wpc':wpc,'clusters': cl}  
     import KAF
     from sklearn.model_selection import GridSearchCV
     filtro = KAF.BGMM_KLMS()
@@ -255,3 +263,15 @@ def searchBGMMCurve(u=None,d=None,clusters=None, wpc=None):
     gmmklms.fit(u,d)
     return gmmklms
 
+def searchBGMM(u=None,d=None, wcp=None):
+   cl = u.shape[0]
+   n_track = []
+   r2 = []
+   import KAF
+   import numpy as np
+   for wcp_ in wcp:
+       m = KAF.BGMM_KLMS(clusters=cl, wcp=wcp_)
+       m.fit(u,d)  
+       n_track.append(np.sum(m.bgmm.weights_ > 0.01))
+       r2.append(m.score(u,d))
+   return n_track, r2
