@@ -28,32 +28,76 @@ bgm_off.fit(u)
 labels_off = bgm_off.predict(u)
 plt.scatter(u[:,0],u[:,1], c=labels_off, cmap="Set1")
 print('Prediction unique labels = ',np.unique(labels_off))
-
+print('score = ', bgm_off.score(u))
 
 """
-Variational Bayesian Gaussian Mixture Model using warmstar=True
-
-Batch training is needed
-"""
-
-batch_size = 100
-n_batches = samples/batch_size
-bgm = BGMM(n_components=batch_size-1, weight_concentration_prior=1e-3, warm_start=True)
-
-batch_index = 0
-
-
-while True:
-    print(u[batch_index:batch_index+batch_size-1])
-    bgm.fit(u[batch_index:batch_index+batch_size-1])
-    batch_index += 100
-    if batch_index >= samples:
-        break
+Variational Bayesian Gaussian Mixture Model using:
+    warmstar=True
+    max_iter=10
     
-labels = bgm.predict(u)
+"""
 
-import matplotlib.pyplot as plt
-plt.scatter(u[:,0],u[:,1], c=labels, cmap="Set1")   
-print(np.unique(labels))
+scr = []
+bgm = BGMM(n_components=samples, weight_concentration_prior=1e-3, warm_start=True, max_iter=10)
+for i in range(100):
+    bgm.fit(u)
+    scr.append(bgm.score(u))
+plt.figure(figsize=(16,9))     
+plt.plot(scr,'b',label='score',markersize=8)
+plt.ylabel('LL')
+plt.xlabel('iteraciones')
+plt.legend()
+plt.grid()
+plt.show()
 
+
+
+"""
+Por batches
+"""
+
+scr = [] #score
+
+bgm = BGMM(n_components=samples, weight_concentration_prior=1e-3, warm_start=True, max_iter=10)
+
+u_batch = u
+np.random.shuffle(u_batch)
+for i in range(100):
+    bgm.fit(u)
+    scr.append(bgm.score(u))
+plt.figure(figsize=(16,9))     
+plt.plot(scr,'m',label='score',markersize=8)
+plt.ylabel('LL')
+plt.xlabel('iteraciones')
+plt.legend()
+plt.grid()
+plt.show()
+
+
+"""Otras pruebas"""
+
+batch_size = 100 #Tamaño del batch
+n_batches = int(samples/batch_size) # No. de batches
+
+bgm = BGMM(n_components=batch_size, weight_concentration_prior=1e-3, warm_start=True, max_iter=10)
+
+scr = []
+u_batch = u
+for k in range(100):
+    np.random.shuffle(u_batch)
+    batch_index = 0
+    for i in range(n_batches):
+        bgm.fit(u_batch[batch_index:batch_index+batch_size])
+        batch_index += batch_size
+    scr.append(bgm.score(u_batch))
+
+    
+    
+plt.figure(figsize=(16,9))     
+plt.plot(scr,'r',label='score',markersize=8)
+plt.ylabel('LL')
+plt.xlabel('iteraciones')
+plt.legend()
+plt.grid()
+plt.show()
 

@@ -1,7 +1,8 @@
 class BGMM_KLMS:
     """Filtro QKLMS que aplica distacia de Mahalanobis en la cuantización y en el kernel"""
-    def __init__(self, clusters = 1, wcp = 1, eta = 0.9, max_iter = 500):
+    def __init__(self, clusters = 1, wcp = 1, eta = 0.9, max_iter = 500, warm_start=False):
         self.max_iter = max_iter
+        self.warm_start = warm_start
         self.clusters = clusters
         self.wcp = wcp
         self.eta = eta #Tasa de aprendizaje
@@ -174,7 +175,7 @@ class BGMM_KLMS:
         #GMM fit
         from sklearn.mixture import BayesianGaussianMixture as BGMM
         import numpy as np
-        bgmm = BGMM(n_components=self.clusters, weight_concentration_prior=self.wcp, max_iter=500).fit(u)
+        bgmm = BGMM(n_components=self.clusters, weight_concentration_prior=self.wcp, max_iter=self.max_iter, warm_start=self.warm_start).fit(u)
         self.bgmm = bgmm
         from scipy.spatial.distance import cdist
         F = [cdist(u, self.bgmm.means_[c].reshape(1,-1), 'mahalanobis', VI=self.bgmm.precisions_[c]) for c in range(self.bgmm.n_components)]
