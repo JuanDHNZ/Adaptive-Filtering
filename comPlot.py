@@ -170,16 +170,33 @@ def dbPlot4(u,d,clusters_gmm, wcp, testName):
     gmm = search.searchGMMCurve(u,d,clusters_gmm)  
     n_comps, r2bgmm = search.searchBGMM(u,d,wcp)    
     #GMM
-    r2gmm = gmm.cv_results_['mean_test_score']   
-    
+    r2gmm = np.asarray(gmm.cv_results_['mean_test_score']).reshape(-1,1) #Se ajusta tamaño
+    clusters_gmm = clusters_gmm.reshape(-1,1) #Se ajusta el tamaño
+    norm_clusters_gmm = clusters_gmm/max(clusters_gmm)
+    #BGMM
+    r2bgmm = np.asarray(r2bgmm).reshape(-1,1)
+    n_comps = np.asarray(n_comps).reshape(-1,1) #Se juasta tamño
+    norm_comps = n_comps/max(n_comps)
     #Referencia
-    ref = np.array((0,1))
-    gmm_results = np.concatenate((clusters_gmm.reshape(-1,1),r2gmm.reshape(-1,1)),axis=1)
-    bgmm_results = np.concatenate((n_comps.reshape(-1,1),r2bgmm.reshape(-1,1)),axis=1)
+    ref = np.array((0,1)).reshape(1,-1)
+    # Se concatenan los resultados para cada prueba
+    gmm_results = np.concatenate((norm_clusters_gmm,r2gmm),axis=1) #gmm
+    bgmm_results = np.concatenate((norm_comps,r2bgmm),axis=1) #bgmm
     from scipy.spatial.distance import cdist
+    #Se miden las distancias respecto a la referencia
+    dist_gmm = cdist(gmm_results, ref)
+    dist_bgmm = cdist(bgmm_results,ref)
+    #Se toma el idex de la menos distancia para cada prueba
+    gmm_index = np.argmin(dist_gmm)#gmm
+    bgmm_index = np.argmin(dist_bgmm)#bgmm
     
+    best_gmm_cl = clusters_gmm[gmm_index]
+    best_gmm_r2 = r2gmm[gmm_index]
+    best_bgmm_cl = n_comps[bgmm_index]
+    best_bgmm_r2 = r2bgmm[bgmm_index]
     
-    xs = 0 
+    return best_gmm_cl.item(), best_gmm_r2.item(), best_bgmm_cl.item(), best_bgmm_r2.item()
+
 
     
     

@@ -199,6 +199,8 @@ samples = 400
 
 """
 
+#Resultados
+results = []
 #parametros
 cl = np.linspace(1,400,40)
 wcp = np.linspace(1e-6,1e3,10)
@@ -210,8 +212,9 @@ ub = y[-samples-3:-3].reshape(-1,1)
 u = np.concatenate((ua,ub), axis=1) # INPUT
 d = z[-samples-1:-1].reshape(-1,1) #TARGET
 
-cp.dbPlot4(u,d,cl,wcp,"Lorenz t2")
+cl_gmm,r2_gmm,cl_bgmm,r2_bgmm = cp.dbPlot4(u,d,cl,wcp,"Lorenz t2")
 
+results.append(['Lorenz',cl_gmm,r2_gmm,cl_bgmm,r2_bgmm])
 
 
 """ATRACTOR DE CHUA"""
@@ -221,8 +224,8 @@ ub = y[-samples-3:-3].reshape(-1,1)
 u = np.concatenate((ua,ub), axis=1) # INPUT
 d = z[-samples-1:-1].reshape(-1,1) #TARGET
 
-cp.dbPlot3(u,d,cl,wcp,"Chua")
-
+cl_gmm,r2_gmm,cl_bgmm,r2_bgmm = cp.dbPlot4(u,d,cl,wcp,"Chua")
+results.append(['Chua',cl_gmm,r2_gmm,cl_bgmm,r2_bgmm])
 
 """
     ATRACTOR DE DUFFING
@@ -234,8 +237,8 @@ ub = y[-samples-3:-3].reshape(-1,1)
 u = np.concatenate((ua,ub), axis=1) # INPUT
 d = z[-samples-1:-1].reshape(-1,1) #TARGET
 
-cp.dbPlot3(u,d,cl,wcp,"Duffing")
-
+cl_gmm,r2_gmm,cl_bgmm,r2_bgmm = cp.dbPlot4(u,d,cl,wcp,"Duffing")
+results.append(['Duffing',cl_gmm,r2_gmm,cl_bgmm,r2_bgmm])
 
 """
     ATRACTOR DE NOSE HOOVER
@@ -247,8 +250,8 @@ ub = y[-samples-3:-3].reshape(-1,1)
 u = np.concatenate((ua,ub), axis=1) # INPUT
 d = z[-samples-1:-1].reshape(-1,1) #TARGET
 
-cp.dbPlot3(u,d,cl,wcp,"Nose Hoover")
-
+cl_gmm,r2_gmm,cl_bgmm,r2_bgmm = cp.dbPlot4(u,d,cl,wcp,"Nose Hoover")
+results.append(['Nose Hoover',cl_gmm,r2_gmm,cl_bgmm,r2_bgmm])
 
 
 """
@@ -261,8 +264,8 @@ ub = y[-samples-3:-3].reshape(-1,1)
 u = np.concatenate((ua,ub), axis=1) # INPUT
 d = z[-samples-1:-1].reshape(-1,1) #TARGET
 
-cp.dbPlot3(u,d,cl,wcp,"Rikitake")
-
+cl_gmm,r2_gmm,cl_bgmm,r2_bgmm = cp.dbPlot4(u,d,cl,wcp,"Rikitake")
+results.append(['Rikitake',cl_gmm,r2_gmm,cl_bgmm,r2_bgmm])
 
 
 """
@@ -275,8 +278,8 @@ ub = y[-samples-3:-3].reshape(-1,1)
 u = np.concatenate((ua,ub), axis=1) # INPUT
 d = z[-samples-1:-1].reshape(-1,1) #TARGET
 
-cp.dbPlot3(u,d,cl,wcp,"Rossler")
-
+cl_gmm,r2_gmm,cl_bgmm,r2_bgmm = cp.dbPlot4(u,d,cl,wcp,"Rossler")
+results.append(['Rossler',cl_gmm,r2_gmm,cl_bgmm,r2_bgmm])
 
 """
     ATRACTOR DE WANG
@@ -288,8 +291,8 @@ ub = y[-samples-3:-3].reshape(-1,1)
 u = np.concatenate((ua,ub), axis=1) # INPUT
 d = z[-samples-1:-1].reshape(-1,1) #TARGET
 
-cp.dbPlot3(u,d,cl,wcp,"Wang")
-
+cl_gmm,r2_gmm,cl_bgmm,r2_bgmm = cp.dbPlot4(u,d,cl,wcp,"Wang")
+results.append(['Wang',cl_gmm,r2_gmm,cl_bgmm,r2_bgmm])
 
 """
     SISTEMA 1 : 
@@ -304,8 +307,8 @@ u, d = testSystems.testSystems(samples=samples, systemType="1")
 u = u.reshape(-1,1)
 d = d.reshape(-1,1)
 
-cp.dbPlot3(u,d,cl,wcp,"Sistema 1")
-
+cl_gmm,r2_gmm,cl_bgmm,r2_bgmm = cp.dbPlot4(u,d,cl,wcp,"Sistema 1")
+results.append(['Sistema',cl_gmm,r2_gmm,cl_bgmm,r2_bgmm])
 
 """ 
     SISTEMA 2 
@@ -328,8 +331,8 @@ ue = s[-samples-6:-6].reshape(-1,1)
 u = np.concatenate((ua,ub,uc,ud,ue), axis=1) 
 d = s[-samples-1:-1].reshape(-1,1)
 
-cp.dbPlot3(u,d,cl,wcp,"Sistema 2")
-  
+cl_gmm,r2_gmm,cl_bgmm,r2_bgmm = cp.dbPlot4(u,d,cl,wcp,"Sistema 2")
+results.append(['Sistema 2',cl_gmm,r2_gmm,cl_bgmm,r2_bgmm])
 
 """ 
     Sistema 3 
@@ -353,4 +356,13 @@ ue = s[-samples-6:-6].reshape(-1,1)
 u = np.concatenate((ua,ub,uc,ud,ue), axis=1)
 d = s[-samples-1:-1].reshape(-1,1 )
 
-cp.dbPlot3(u,d,cl,wcp,"Sistema 3")
+cl_gmm,r2_gmm,cl_bgmm,r2_bgmm = cp.dbPlot4(u,d,cl,wcp,"Sistema 3")
+results.append(['Sistema 3',cl_gmm,r2_gmm,cl_bgmm,r2_bgmm])
+
+
+
+#Dataframe with results
+import pandas as pd 
+df = pd.DataFrame(results, columns = ['prueba', 'cb_gmm','r2_gmm','cb_bgmm','r2_bgmm'])  
+#Export results in CSV
+df.to_csv('pruebasGMM/GMM_Vs_BGMM/mejor_resultado_x_prueba.csv', index=False)
