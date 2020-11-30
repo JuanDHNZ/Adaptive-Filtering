@@ -182,6 +182,8 @@ class BGMM_KLMS:
         F = [np.exp((-f**2)/2) for f in F]
         phi = np.concatenate(F,axis=1)
         
+        self.F_size = np.asarray(F).shape
+        
         from sklearn.linear_model import LinearRegression
         reg = LinearRegression()
         reg.fit(phi,d)
@@ -201,9 +203,11 @@ class BGMM_KLMS:
         y = np.empty((N,), dtype=float)
         i = 0      
         from scipy.spatial.distance import cdist
+        print("tamano de u ", u.shape)
         F = [cdist(u, self.bgmm.means_[c].reshape(1,-1), 'mahalanobis', VI=self.bgmm.precisions_[c]) for c in range(self.bgmm.n_components)]
         F = [np.exp((-f**2)/2) for f in F]
         phi = np.concatenate(F,axis=1)
+        print(phi.shape)
         return self.reg.predict(phi)
         
         # y,d = self.__output(u)
