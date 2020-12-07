@@ -24,8 +24,16 @@ def pruningGMM2(gmm):
 
 """PRUEBA CON LINEAR REGRESSOR SIMPLE"""
 
+    
+    
+import matplotlib.pyplot as plt
+from sklearn.mixture import BayesianGaussianMixture as bgm
+from sklearn.linear_model import LinearRegression
+from scipy.spatial.distance import cdist
+from sklearn.metrics import r2_score
 import TimeSeriesGenerator as tsg
 import numpy as np
+
 samples = 10000
 batch_size = 50 #Batch size
 
@@ -39,12 +47,6 @@ for att_type in attr_list:
     # Training data dimensions
     Nu,Du = u.shape 
     Nd,Dd = d.shape
-    
-    
-    import matplotlib.pyplot as plt
-    from sklearn.mixture import BayesianGaussianMixture as bgm
-    from scipy.spatial.distance import cdist
-    from sklearn.metrics import r2_score
     
     #inicializacion
     scr = [] #Score
@@ -61,7 +63,6 @@ for att_type in attr_list:
     model.fit(u_train[0]) 
     
     #Regressor
-    from sklearn.linear_model import LinearRegression
     reg = LinearRegression()
     
     #Save first-observed trainning date
@@ -181,11 +182,6 @@ for u_,d_ in zip(u_train,d_train):
         search.confidence_ellipse(cov=cov, mean=mean,ax=ax,edgecolor='red')
         plt.scatter(mean[0],mean[1], marker="x", color="red")
     plt.show()
-
-
-
-
-
 
 
 
