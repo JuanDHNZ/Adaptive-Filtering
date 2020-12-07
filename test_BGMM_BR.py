@@ -188,8 +188,93 @@ for u_,d_ in zip(u_train,d_train):
 
 
 
+"""PRUEBA RLS"""
 
+samples = 10000
+batch_size = 50 #Batch size
 
+from LinearAdaptiveFilters import RLS
+
+for att_type in attr_list:
+    x, y, z = tsg.chaoticSystem(samples = samples + 10, systemType = att_type)
+    u = np.concatenate((x[-samples-2:-2].reshape(-1,1),y[-samples-3:-3].reshape(-1,1)), axis=1) # INPUT
+    d = z[-samples-1:-1].reshape(-1,1) #TARGET
+    
+    # Training data dimensions
+    Nu,Du = u.shape 
+    Nd,Dd = d.shape
+    
+    #inicializacion
+    scr = [] #Score
+
+    """PRETRAIN STAGE"""
+    #split data in batches 
+    u_train = u.reshape(-1,batch_size,Du) 
+    d_train = d.reshape(-1,batch_size,Dd)
+    
+    
+    #Bayesian GMM with Warm Start
+    model = bgm(n_components=batch_size,weight_concentration_prior=1e-3,warm_start=True,max_iter=20)
+    #Bayesian GMM pre-training stage 
+    model.fit(u_train[0]) 
+    
+    #Regressor
+    reg = RLS(num_vars=batch_size,lam=0.98,delta=1)
+    
+    #Save first-observed trainning date
+    input_train_history = u_train[0]
+    target_train_history = d_train[0]
+    
+    
+    # print(input_train_history.shape,target_train_history.shape) #Test
+    
+    #Exclude pre-training instances
+    u_train = u_train[1:]
+    d_train = d_train[1:]
+    
+    # Option 1:
+    for u_,d_ in zip(u_train,d_train):
+        model.fit(u_)
+        #Bayesian GMM model parameters
+        Mn = model.means_ #means
+        Sn = model.precisions_ #presitions
+        Nc = model.n_components #Number of components
+        
+        # mns, prs, ncomp = pruningGMM2(model)
+        
+        # Mahalanobis kernel with BGMM parameters
+        MK = [cdist(input_train_history, Mn[j].reshape(1,-1), 'mahalanobis', VI=Sn[j]) for j in range(Nc)]
+        MK = [np.exp((-f**2)/2) for f in MK] 
+        Phi = np.concatenate(MK,axis=1)
+        
+        # print(Phi.shape)#Test
+        
+        MK_ = [cdist(u_, Mn[j].reshape(1,-1), 'mahalanobis', VI=Sn[j]) for j in range(Nc)]
+        MK_ = [np.exp((-f**2)/2) for f in MK_] 
+        Phi_current = np.concatenate(MK_,axis=1)
+        
+        # print(Phi_current.shape)#Test
+        
+        #Bayesian Regressor
+        reg.fit(Phi,target_train_history.reshape(-1,))#training 
+        y_pred = reg.predict(Phi_current)#prediction
+        scr.append(r2_score(d_,y_pred.T)) # R2 performance
+        
+
+        # print(att_type + " r2 = " , r2_score(d_,y_pred)) #Test
+        
+        #Save current batch in history
+        input_train_history = np.concatenate((input_train_history,u_))
+        target_train_history = np.concatenate((target_train_history,d_))
+        
+        # print(input_train_history.shape,target_train_history.shape) #Test
+        
+    plt.title("Test BGMM & BRR - " + att_type)
+    plt.ylabel("R2")
+    plt.ylim([-1,1])
+    plt.xlabel("iterations")
+    plt.plot(scr,'m')
+    plt.show()
 
 
 
