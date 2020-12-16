@@ -198,6 +198,24 @@ def dbPlot4(u,d,clusters_gmm, wcp, testName):
     return best_gmm_cl.item(), best_gmm_r2.item(), best_bgmm_cl.item(), best_bgmm_r2.item()
 
 
+def KRLS_ALD_PLOT(u,d,sgm,eps):
+    import search
+    results = search.gridSearchKRLS(u,d,sgm,eps)
+
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set()
+    
+    plt.plot(d,"r*",label="target")
+    for r,index in zip(results,range(sgm.shape[0])):
+        plt.plot(r,label='s={:.1f} & e={:.1f}'.format(sgm[index],eps[index]))     
+    plt.legend()
+    plt.show()
+    
+    
+    
+
+
     
     
     
