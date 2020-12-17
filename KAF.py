@@ -1141,8 +1141,9 @@ class KRLS_ALD:
     """Y. Engel, S. Mannor and R. Meir, "The kernel recursive least-squares 
     algorithm," in IEEE Transactions on Signal Processing, vol. 52, no. 8, 
     pp. 2275-2285, Aug. 2004, doi: 10.1109/TSP.2004.830985."""
-    def __init__(self, sigma=0.9, epsilon=0.01):        
+    def __init__(self, sigma=0.9, epsilon=0.01,verbose=False):        
         self.epsilon = epsilon
+        self.verbose = verbose
         self.sigma = sigma
         #self.CB = [] #Codebook
         #self.a_coef = [] #Coeficientes
@@ -1191,11 +1192,13 @@ class KRLS_ALD:
             k_ant  = rbf_vec(self.CB,xn)  
             knn    = rbf(xn,xn)
             y_pred = self.alpha@k_ant
-            #error = yn-y_pred
+            error = yn-y_pred
             #3. ALD test
             an    = self.Kinv@k_ant
-            delta = an@self.K@an -2*k_ant@an + knn#knn - k_ant@an  
-            #print(n,len(D),delta,abs(error)/abs(yn)*100)
+            delta = knn - k_ant@an  #an@self.K@an -2*k_ant@an + knn#knn - k_ant@an  
+            if self.verbose:
+                print(n,len(self.CB),delta,error/np.abs(yn))
+                
             if delta > self.epsilon:#*(knn**2):
                 #4. Add xn to dictionary and update K, P, alpha
                 self.CB.append(xn)
@@ -1212,7 +1215,7 @@ class KRLS_ALD:
                 den = 1+an@self.P@an
                 q = self.P@an/den
                 self.P = self.P - self.P@an.reshape(-1,1)@an.reshape(1,-1)@self.P/den
-                self.alpha = self.alpha - (yn-y_pred)*self.Kinv@q
+                self.alpha = self.alpha + (yn-y_pred)*self.Kinv@q
             u_pred.append(y_pred)
         return np.array(u_pred)
 
