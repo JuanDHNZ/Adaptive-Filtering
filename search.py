@@ -275,3 +275,17 @@ def searchBGMM(u=None,d=None, wcp=None):
        n_track.append(np.sum(m.bgmm.weights_ > 0.01))
        r2.append(m.score(u,d))
    return n_track, r2
+
+def gridSearchKRLS(u,d,sgm,eps):
+    import KAF
+    from sklearn.metrics import r2_score
+    result = []
+    for i in sgm:
+        partial = []
+        for j in eps:
+            kf = KAF.KRLS_ALD(sigma=i,epsilon=j)
+            out = kf.evaluate(u,d)
+            partial.append(r2_score(d,out.reshape(-1,1)))
+        result.append(partial)
+    return result
+            
