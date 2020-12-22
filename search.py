@@ -288,4 +288,27 @@ def gridSearchKRLS(u,d,sgm,eps):
             partial.append(r2_score(d,out.reshape(-1,1)))
         result.append(partial)
     return result
-            
+
+
+def gridSearchKRLS_plot_predict(u,d,sgm,eps,testName):
+    import KAF
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    from sklearn.metrics import r2_score
+    
+
+    sns.set()
+    result = []
+    for i in sgm:
+        partial = []
+        for j in eps:
+            kf = KAF.KRLS_ALD(sigma=i,epsilon=j)
+            out = kf.evaluate(u,d)
+            fig = plt.gcf()
+            fig.set_size_inches(18.5, 10.5)
+            plt.plot(d,"r", label="target")
+            plt.plot(out,"g",label="predict")
+            plt.legend()
+            plt.title('Prueba ' + testName + "    $\sigma$ ="+ "{:.4f}".format(i) + ";  $\epsilon$ = " + "{:.4f}".format(j) + ";  R2 = " + "{:.4f}".format(r2_score(d,out)))
+            plt.savefig("pruebasKRLS/predicciones/"+ testName + "sg"+"{:.4f}".format(i)+ "ep" + "{:.4f}".format(i) +".png", dpi = 300)
+            plt.show()    

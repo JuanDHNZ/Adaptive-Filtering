@@ -6,24 +6,12 @@ Created on Wed Dec 16 11:27:40 2020
 
 PRUEBA A KRLS_ALD
 """
-
-def trainAndPlot(u,d):
-    import KAF
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    sns.set()
-    
-    krls = KAF.KRLS_ALD()
-    pred = krls.evaluate(u,d)
-    plt.plot(pred,"c",label="predict")
-    plt.plot(d,"r",label="target")
-    plt.legend()
-    
+   
 import TimeSeriesGenerator as tsg
 import numpy as np
 import comPlot as cp
 
-samples = 1000
+samples = 500
 # epList = np.logspace(0, 2, 20)
 # sgmList = np.logspace(0,2,20)
 
@@ -193,5 +181,61 @@ d = s[-samples-1:-1].reshape(-1,1 )
 
 sgmList = np.linspace(0.1,np.max(u),10)
 cp.KRLS_ALD_PLOT(u,d,sgmList,epList,testName="sistema 3")
+
+
+
+"""
+***********************************************************
+
+                        PREDICCIONES
+                        
+***********************************************************
+"""
+import search
+
+
+"""
+    SISTEMA 1 : 
+    
+    x = Proceso Gaussiano con media 0 y varianza 1+
+    t = Filtro FIR en x   
+    
+"""
+import testSystems
+
+u, d = testSystems.testSystems(samples=samples, systemType="1")
+u = u.reshape(-1,1)
+d = d.reshape(-1,1)
+
+sgmList = np.linspace(0.1,np.max(u),10)
+search.gridSearchKRLS_plot_predict(u,d,sgmList,epList,testName="sistema 1")
+
+
+"""
+    ATRACTOR DE RIKITAKE
+
+"""
+x, y, z = tsg.chaoticSystem(samples=samples+10,systemType="rikitake")
+ua = x[-samples-2:-2].reshape(-1,1)
+ub = y[-samples-3:-3].reshape(-1,1)
+u = np.concatenate((ua,ub), axis=1) # INPUT
+d = z[-samples-1:-1].reshape(-1,1) #TARGET
+
+sgmList = np.linspace(0.1,np.max(u),10)
+search.gridSearchKRLS_plot_predict(u,d,sgmList,epList,testName="rikitake")
+
+
+"""
+    ATRACTOR DE ROSSLER
+
+"""
+x, y, z = tsg.chaoticSystem(samples=samples+10,systemType="rossler")
+ua = x[-samples-2:-2].reshape(-1,1)
+ub = y[-samples-3:-3].reshape(-1,1)
+u = np.concatenate((ua,ub), axis=1) # INPUT
+d = z[-samples-1:-1].reshape(-1,1) #TARGET
+
+sgmList = np.linspace(0.1,np.max(u),10)
+search.gridSearchKRLS_plot_predict(u,d,sgmList,epList,testName="rossler")
 
 
