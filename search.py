@@ -311,4 +311,98 @@ def gridSearchKRLS_plot_predict(u,d,sgm,eps,testName):
             plt.legend()
             plt.title('Prueba ' + testName + "    $\sigma$ ="+ "{:.4f}".format(i) + ";  $\epsilon$ = " + "{:.4f}".format(j) + ";  R2 = " + "{:.4f}".format(r2_score(d,out)))
             plt.savefig("pruebasKRLS/predicciones/"+ testName + "sg"+"{:.4f}".format(i)+ "ep" + "{:.4f}".format(i) +".png", dpi = 300)
-            plt.show()    
+            plt.show()   
+            
+def searchQKLMS(u,d,eps,testName):
+    import KAF
+    from sklearn.metrics import r2_score as r2
+    from sklearn.metrics import mean_squared_error as mse
+    import pandas as pd
+    
+    print("QKLMS search...")
+    #Inicializacion     
+    kf = KAF.QKLMS3(epsilon=eps[0])
+    out = kf.evaluate(u,d)
+    best_r2 = r2(d[1:],out)
+    best_mse = mse(d[1:],out)
+    best_r2_cb = len(kf.CB)
+    best_r2_ep = eps[0]
+    best_mse_cb = len(kf.CB)
+    best_mse_ep = eps[0]
+    for j in eps[1:]:
+        # print("eps = ",j)
+        kf = KAF.QKLMS3(epsilon=j)
+        out = kf.evaluate(u,d)
+        partial_r2 = r2(d[1:],out)
+        partial_mse = mse(d[1:],out)
+        # print("r2 = ",partial_r2)
+        # print("mse = ",partial_mse)
+        # print("\n")
+        # print(kf.testDists)
+        if partial_r2 > best_r2:
+            best_r2 = partial_r2
+            best_r2_cb = len(kf.CB)
+            best_r2_ep = j 
+        if partial_mse < best_mse:
+            best_mse = partial_mse
+            best_mse_cb = len(kf.CB)
+            best_mse_ep = j 
+        
+    results = {"Best_R2":best_r2, 
+               "Best_R2_CB_size":best_r2_cb, 
+               "Best_R2_epsilon":best_r2_ep, 
+               "Best_MSE":best_mse,
+               "Best_MSE_CB_size":best_mse_cb,
+               "Best_MSE_epsilon":best_mse_ep}
+    
+    return pd.DataFrame(data=results,index=[testName])
+ 
+def searchKRLS_ALD(u,d,sgm,eps,testName):
+    import KAF
+    from sklearn.metrics import r2_score as r2
+    from sklearn.metrics import mean_squared_error as mse
+    import pandas as pd
+    
+    print("KRLS search...")
+    #Inicializacion     
+    kf = KAF.QKLMS3(epsilon=eps[0])
+    out = kf.evaluate(u,d)
+    best_r2 = r2(d[1:],out)
+    best_mse = mse(d[1:],out)
+    best_r2_cb = len(kf.CB)
+    best_r2_ep = eps[0]
+    best_r2_sgm = sgm[0]
+    best_mse_cb = len(kf.CB)
+    best_mse_ep = eps[0]
+    best_mse_sgm = sgm[0]
+    
+    for i in sgm[1:]:
+        for j in eps[1:]:
+            # print("eps = ",j)
+            kf = KAF.KRLS_ALD(epsilon=j,sigma=i)
+            out = kf.evaluate(u,d)
+            partial_r2 = r2(d,out.reshape(-1,1))
+            partial_mse = mse(d,out.reshape(-1,1))
+            # print("r2 = ",partial_r2)
+            # print("mse = ",partial_mse)
+            # print("\n")
+            # print(kf.testDists)
+            if partial_r2 > best_r2:
+                best_r2 = partial_r2
+                best_r2_cb = len(kf.CB)
+                best_r2_ep = j 
+            if partial_mse < best_mse:
+                best_mse = partial_mse
+                best_mse_cb = len(kf.CB)
+                best_mse_ep = j 
+        
+    results = {"Best_R2":best_r2, 
+               "Best_R2_CB_size":best_r2_cb, 
+               "Best_R2_epsilon":best_r2_ep,
+               "Best_R2_sigma":best_r2_sgm,
+               "Best_MSE":best_mse,
+               "Best_MSE_CB_size":best_mse_cb,
+               "Best_MSE_epsilon":best_mse_ep,
+               "Best_MSE_sigma":best_mse_sgm}
+    
+    return pd.DataFrame(data=results,index=[testName])       
