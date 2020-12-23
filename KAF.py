@@ -1172,7 +1172,8 @@ class KRLS_ALD:
         rbf = lambda x,y : np.exp(-np.linalg.norm(x-y)**2/(2*self.sigma**2))
         rbf_vec = lambda D,y : np.array([np.exp(-np.linalg.norm(x-y)**2/(2*self.sigma**2)) for x in D]).reshape(-1,)
         #Inicializaciones
-        start = 0        
+        start = 0   
+        u_pred = []     
         if self.initialize:
             self.K     = np.array([[rbf(u[0],u[0])]])
             self.Kinv  = np.array([[1.0/rbf(u[0],u[0])]])
@@ -1182,8 +1183,8 @@ class KRLS_ALD:
             #y = np.empty((Nd-1,Dd))
             self.initialize = False
             start = 1
-
-        u_pred=[0]
+            u_pred.append(0)
+        
         for n in tqdm(range(start,len(u))):
             #1. Get new sample:
             xn = u[n]
