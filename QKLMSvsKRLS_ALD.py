@@ -11,6 +11,7 @@ import search
 import pandas as pd
 
 samples = 500
+batchSize = 10
 # epList = np.logspace(0, 2, 20)
 # sgmList = np.logspace(0,2,20)
 
@@ -30,8 +31,19 @@ sgmList = np.linspace(0.1,np.max(u),20)
 epList = np.linspace(1e-6,1e-1, 20)
 sR_KRLS = search.searchKRLS_ALD(u,d,sgmList, epList,"lorenz")
 
+sgmList = np.linspace(0.1,np.max(u),20)
+epList = np.linspace(1e-1,300, 300)
+sR_QKLMS_base = search.searchQKLMS_base(u,d,sgmList,epList,"lorenz")
+
+wcp = np.linspace(1e-6, 1e-2,50)
+sR_KLMS_BGMM = search.searchKLMS_BGMM(u,d,wcp,"lorenz",batchSize)
+
+
 QKLMS_RESULTS = sR_QKLMS
 KRLS_RESULTS = sR_KRLS
+QKLMS_base_RESULTS = sR_QKLMS_base
+KLMS_BGMM_RESULTS = sR_KLMS_BGMM
+
 
 """ATRACTOR DE CHUA"""
 x, y, z = tsg.chaoticSystem(samples=samples+10,systemType="chua")
@@ -47,9 +59,17 @@ sgmList = np.linspace(0.1,np.max(u),20)
 epList = np.linspace(1e-6,1e-1, 20)
 sR_KRLS = search.searchKRLS_ALD(u,d,sgmList, epList,"chua")
 
+sgmList = np.linspace(0.1,np.max(u),20)
+epList = np.linspace(1e-1,300, 300)
+sR_QKLMS_base = search.searchQKLMS_base(u,d,sgmList,epList,"chua")
+
+wcp = np.linspace(1e-6, 1e-2,50)
+sR_KLMS_BGMM = search.searchKLMS_BGMM(u,d,wcp,"chua",batchSize)
+
 QKLMS_RESULTS = pd.concat([QKLMS_RESULTS,sR_QKLMS])
 KRLS_RESULTS = pd.concat([KRLS_RESULTS,sR_KRLS])
-
+QKLMS_base_RESULTS = pd.concat([QKLMS_base_RESULTS, sR_QKLMS_base])
+KLMS_BGMM_RESULTS = pd.concat([KLMS_BGMM_RESULTS, sR_KLMS_BGMM])
 
 
 """
@@ -70,8 +90,18 @@ sgmList = np.linspace(0.1,np.max(u),20)
 epList = np.linspace(1e-6,1e-1, 20)
 sR_KRLS = search.searchKRLS_ALD(u,d,sgmList, epList,"duffing")
 
+sgmList = np.linspace(0.1,np.max(u),20)
+epList = np.linspace(1e-1,300, 300)
+sR_QKLMS_base = search.searchQKLMS_base(u,d,sgmList,epList,"duffing")
+
+wcp = np.linspace(1e-6, 1e-2,50)
+sR_KLMS_BGMM = search.searchKLMS_BGMM(u,d,wcp,"duffing",batchSize)
+
+
 QKLMS_RESULTS = pd.concat([QKLMS_RESULTS,sR_QKLMS])
 KRLS_RESULTS = pd.concat([KRLS_RESULTS,sR_KRLS])
+QKLMS_base_RESULTS = pd.concat([QKLMS_base_RESULTS, sR_QKLMS_base])
+KLMS_BGMM_RESULTS = pd.concat([KLMS_BGMM_RESULTS, sR_KLMS_BGMM])
 
 
 """
@@ -91,8 +121,17 @@ sgmList = np.linspace(0.1,np.max(u),20)
 epList = np.linspace(1e-6,1e-1, 20)
 sR_KRLS = search.searchKRLS_ALD(u,d,sgmList, epList,"nose_hoover")
 
+sgmList = np.linspace(0.1,np.max(u),20)
+epList = np.linspace(1e-1,300, 300)
+sR_QKLMS_base = search.searchQKLMS_base(u,d,sgmList,epList,"nose_hoover")
+
+wcp = np.linspace(1e-6, 1e-2,50)
+sR_KLMS_BGMM = search.searchKLMS_BGMM(u,d,wcp,"nose_hoover",batchSize)
+
 QKLMS_RESULTS = pd.concat([QKLMS_RESULTS,sR_QKLMS])
 KRLS_RESULTS = pd.concat([KRLS_RESULTS,sR_KRLS])
+QKLMS_base_RESULTS = pd.concat([QKLMS_base_RESULTS, sR_QKLMS_base])
+KLMS_BGMM_RESULTS = pd.concat([KLMS_BGMM_RESULTS, sR_KLMS_BGMM])
 
 
 
@@ -113,8 +152,17 @@ sgmList = np.linspace(0.1,np.max(u),20)
 epList = np.linspace(1e-6,1e-1, 20)
 sR_KRLS = search.searchKRLS_ALD(u,d,sgmList, epList,"rikitake")
 
+sgmList = np.linspace(0.1,np.max(u),20)
+epList = np.linspace(1e-1,300, 300)
+sR_QKLMS_base = search.searchQKLMS_base(u,d,sgmList,epList,"rikitake")
+
+wcp = np.linspace(1e-6, 1e-2,50)
+sR_KLMS_BGMM = search.searchKLMS_BGMM(u,d,wcp,"rikitake",batchSize)
+
 QKLMS_RESULTS = pd.concat([QKLMS_RESULTS,sR_QKLMS])
 KRLS_RESULTS = pd.concat([KRLS_RESULTS,sR_KRLS])
+QKLMS_base_RESULTS = pd.concat([QKLMS_base_RESULTS, sR_QKLMS_base])
+KLMS_BGMM_RESULTS = pd.concat([KLMS_BGMM_RESULTS, sR_KLMS_BGMM])
 
 
 
@@ -136,8 +184,17 @@ sgmList = np.linspace(0.1,np.max(u),20)
 epList = np.linspace(1e-6,1e-1, 20)
 sR_KRLS = search.searchKRLS_ALD(u,d,sgmList, epList,"rossler")
 
+sgmList = np.linspace(0.1,np.max(u),20)
+epList = np.linspace(1e-1,300, 300)
+sR_QKLMS_base = search.searchQKLMS_base(u,d,sgmList,epList,"rossler")
+
+wcp = np.linspace(1e-6, 1e-2,50)
+sR_KLMS_BGMM = search.searchKLMS_BGMM(u,d,wcp,"rossler",batchSize)
+
 QKLMS_RESULTS = pd.concat([QKLMS_RESULTS,sR_QKLMS])
 KRLS_RESULTS = pd.concat([KRLS_RESULTS,sR_KRLS])
+QKLMS_base_RESULTS = pd.concat([QKLMS_base_RESULTS, sR_QKLMS_base])
+KLMS_BGMM_RESULTS = pd.concat([KLMS_BGMM_RESULTS, sR_KLMS_BGMM])
 
 
 
@@ -158,8 +215,18 @@ sgmList = np.linspace(0.1,np.max(u),20)
 epList = np.linspace(1e-6,1e-1, 20)
 sR_KRLS = search.searchKRLS_ALD(u,d,sgmList, epList,"wang")
 
+sgmList = np.linspace(0.1,np.max(u),20)
+epList = np.linspace(1e-1,300, 300)
+sR_QKLMS_base = search.searchQKLMS_base(u,d,sgmList,epList,"wang")
+
+wcp = np.linspace(1e-6, 1e-2,50)
+sR_KLMS_BGMM = search.searchKLMS_BGMM(u,d,wcp,"wang",batchSize)
+
+
 QKLMS_RESULTS = pd.concat([QKLMS_RESULTS,sR_QKLMS])
 KRLS_RESULTS = pd.concat([KRLS_RESULTS,sR_KRLS])
+QKLMS_base_RESULTS = pd.concat([QKLMS_base_RESULTS, sR_QKLMS_base])
+KLMS_BGMM_RESULTS = pd.concat([KLMS_BGMM_RESULTS, sR_KLMS_BGMM])
 
 
 
@@ -183,9 +250,18 @@ sgmList = np.linspace(0.1,np.max(u),20)
 epList = np.linspace(1e-6,1e-1, 20)
 sR_KRLS = search.searchKRLS_ALD(u,d,sgmList, epList,"Sistema 1")
 
+sgmList = np.linspace(0.1,np.max(u),20)
+epList = np.linspace(1e-1,300, 300)
+sR_QKLMS_base = search.searchQKLMS_base(u,d,sgmList,epList,"Sistema 1")
+
+wcp = np.linspace(1e-6, 1e-2,50)
+sR_KLMS_BGMM = search.searchKLMS_BGMM(u,d,wcp,"Sistema1",batchSize)
+
+
 QKLMS_RESULTS = pd.concat([QKLMS_RESULTS,sR_QKLMS])
 KRLS_RESULTS = pd.concat([KRLS_RESULTS,sR_KRLS])
-
+QKLMS_base_RESULTS = pd.concat([QKLMS_base_RESULTS, sR_QKLMS_base])
+KLMS_BGMM_RESULTS = pd.concat([KLMS_BGMM_RESULTS, sR_KLMS_BGMM])
 
 
 """ 
@@ -216,9 +292,18 @@ sgmList = np.linspace(0.1,np.max(u),20)
 epList = np.linspace(1e-6,1e-1, 20)
 sR_KRLS = search.searchKRLS_ALD(u,d,sgmList, epList,"Sistema 2")
 
+sgmList = np.linspace(0.1,np.max(u),20)
+epList = np.linspace(1e-1,300, 300)
+sR_QKLMS_base = search.searchQKLMS_base(u,d,sgmList,epList,"Sistema 2")
+
+wcp = np.linspace(1e-6, 1e-2,50)
+sR_KLMS_BGMM = search.searchKLMS_BGMM(u,d,wcp,"Sistema 2",batchSize)
+
+
 QKLMS_RESULTS = pd.concat([QKLMS_RESULTS,sR_QKLMS])
 KRLS_RESULTS = pd.concat([KRLS_RESULTS,sR_KRLS])
-
+QKLMS_base_RESULTS = pd.concat([QKLMS_base_RESULTS, sR_QKLMS_base])
+KLMS_BGMM_RESULTS = pd.concat([KLMS_BGMM_RESULTS, sR_KLMS_BGMM])
   
 
 """ 
@@ -250,11 +335,23 @@ sgmList = np.linspace(0.1,np.max(u),20)
 epList = np.linspace(1e-6,1e-1, 20)
 sR_KRLS = search.searchKRLS_ALD(u,d,sgmList, epList,"Sistema 3")
 
+sgmList = np.linspace(0.1,np.max(u),20)
+epList = np.linspace(1e-1,300, 300)
+sR_QKLMS_base = search.searchQKLMS_base(u,d,sgmList,epList,"Sistema 3")
+
+wcp = np.linspace(1e-6, 1e-2,50)
+sR_KLMS_BGMM = search.searchKLMS_BGMM(u,d,wcp,"Sistema 3",batchSize)
+
+
 QKLMS_RESULTS = pd.concat([QKLMS_RESULTS,sR_QKLMS])
 KRLS_RESULTS = pd.concat([KRLS_RESULTS,sR_KRLS])
+QKLMS_base_RESULTS = pd.concat([QKLMS_base_RESULTS, sR_QKLMS_base])
+KLMS_BGMM_RESULTS = pd.concat([KLMS_BGMM_RESULTS, sR_KLMS_BGMM])
 
 
+"""RESULADOS A CSV"""     
 
-"""RESULADOS A CSV"""
 QKLMS_RESULTS.to_csv("QKLMS_RESULTS.csv")
 KRLS_RESULTS.to_csv("KRLS_RESULTS.csv")
+QKLMS_base_RESULTS.to_csv("QKLMS_base_RESULTS.csv")
+KLMS_BGMM_RESULTS.to_csv("KLMS_BGMM_RESULTS.csv")
