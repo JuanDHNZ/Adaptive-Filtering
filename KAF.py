@@ -1219,3 +1219,103 @@ class KRLS_ALD:
         return np.array(u_pred)
 
 
+class QKLMS_AKB:
+    """Filtro QKLMS"""
+    def __init__(self, eta=0.9, epsilon=10, sigma_init=0, mu=0.9, K=10):
+        self.eta = eta #Learning rate
+        self.epsilon = epsilon #Umbral de cuantizacion
+        self.sigma = sigma_init #Sigma inicial
+        self.mu = mu #Step size de AKB
+        self.K = K #Numero de AKB
+        self.CB = [] #Codebook
+        self.a_coef = [] #Coeficientes
+        self.__CB_cov = [] #Covarianzas
+        self.__CB_cov_sums = [] #Sumas acumuladas
+        self.__CB_cov_prods = [] #Productos acumulados
+        self.__n_cov = [] # n iteraciones en covarianza
+        self.CB_growth = [] #Crecimiento del codebook por iteracion
+        self.initialize = True #Bandera de inicializacion
+        self.init_eval = True
+        self.evals = 0  #
+        
+        self.testCB_means = [] #Prueba
+        self.testDists = []
+        
+    def evaluate(self, u , d):
+        import numpy as np
+        #Validación d tamaños de entrada
+        if len(u.shape) == 2:
+            if u.shape[0]!=d.shape[0]:
+                raise ValueError('All of the input arguments must be of the same lenght')
+        else:
+            if len(u.shape) == 1:
+                u = u.reshape(1,-1)
+                d = d.reshape(1,-1)
+        #Sigma definido por criterio de mediana
+        if self.sigma == None:
+            from scipy.spatial.distance import cdist
+       	    d_sgm = cdist(u,u)
+       	    self.sigma = np.median(d_sgm) #Criterio de la mediana      
+        #Tamaños u y d
+        N,D = u.shape
+        Nd,Dd = d.shape
+        #Inicializaciones
+        if self.initialize:
+            y = np.empty((Nd-1,Dd))
+            self.CB.append(u[0,:]) #Codebook
+            self.a_coef.append(self.eta*d[0,:]) #Coeficientes
+            #Salida           
+            i = 1
+            self.initialize = False
+            # err = 0.1
+            if u.shape[0] == 1:                
+                return
+        else:
+            i = 0
+            y = np.empty((Nd,Dd))
+        while True:
+            yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
+            # self.__newEta(yi,err) #Nuevo eta
+            err = d[i] - yi # Error
+            #Cuantizacion
+            min_index = np.argmin(disti)
+            
+            if disti[min_index] <= self.epsilon:
+              self.a_coef[min_index] =(self.a_coef[min_index] + self.eta*err).item()
+            else:              
+                if len(self.CB) >= self.K:
+                    a = 1
+                else:
+                    
+                    self.CB.append(u[i,:])
+                    self.a_coef.append((self.eta*err).item())
+                    
+            
+            
+            self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
+            
+            if self.init_eval: 
+                y[i-1] = yi
+            else:
+                y[i] = yi
+
+            if(i == N-1):
+                if self.init_eval:
+                    self.init_eval = False           
+                return y
+            i+=1 
+
+    def __output(self,ui):
+        from scipy.spatial.distance import cdist
+        import numpy as np
+        dist = cdist(np.asarray(self.CB), ui)
+        K = np.exp(-0.5*(dist**2)/(self.sigma**2))
+        y = K .T.dot(np.asarray(self.a_coef))
+        return [y,dist]
+
+    def __newEta(self, y, errp):
+        # y: Salida calculada
+        # errp: Error a priori 
+        self.eta = (2*errp*y)/(errp**2 + 1)
+        return False
+    
