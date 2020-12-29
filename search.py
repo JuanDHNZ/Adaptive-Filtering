@@ -509,7 +509,7 @@ def searchKLMS_BGMM(u=None,d=None, wcp=None, testName="Prueba",batchSize=100):
     print("Finished")
     return pd.DataFrame(data=results,index=[testName])
 
-def searchQKLMS_GMM(u,d,sgm,eps,testName):
+def searchKLMS_GMM(u,d,sgm,eps,testName):
     import KAF
     from sklearn.metrics import r2_score as r2
     from sklearn.metrics import mean_squared_error as mse
@@ -517,7 +517,7 @@ def searchQKLMS_GMM(u,d,sgm,eps,testName):
     
     print("QKLMS search...")
     #Inicializacion     
-    kf = KAF.QKLMS(epsilon=eps[0],sigma=sgm[0])
+    kf = KAF.GMM_KLMS(epsilon=eps[0],sigma=sgm[0])
     out = kf.evaluate(u,d)
     best_r2 = r2(d[1:],out)
     best_mse = mse(d[1:],out)
@@ -559,3 +559,4 @@ def searchQKLMS_GMM(u,d,sgm,eps,testName):
                "Best_MSE_sigma":best_mse_sgm}
     
     return pd.DataFrame(data=results,index=[testName])  
+
