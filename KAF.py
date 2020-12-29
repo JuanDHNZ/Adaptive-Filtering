@@ -1284,11 +1284,15 @@ class QKLMS_AKB:
               self.a_coef[min_index] =(self.a_coef[min_index] + self.eta*err).item()
             else:              
                 if len(self.CB) >= self.K:
-                    a = 1
-                else:
-                    
+                    gu =  self.__gu(err,yi) 
+                    self.sigma = 
                     self.CB.append(u[i,:])
                     self.a_coef.append((self.eta*err).item())
+                else:
+                    self.sigma_pool[]
+                    self.CB.append(u[i,:])
+                    self.a_coef.append((self.eta*err).item())
+                    
                     
             
             
@@ -1312,6 +1316,16 @@ class QKLMS_AKB:
         K = np.exp(-0.5*(dist**2)/(self.sigma**2))
         y = K .T.dot(np.asarray(self.a_coef))
         return [y,dist]
+    
+    def __gu(self,e,yi):
+        gu_f = self.mu*err* self.a_coef[min_index]*yi
+        from scipy.spatial.distance import cdist
+        import numpy as np
+        dist = cdist(np.asarray(self.CB), ui)
+        gu_s = (dist**2)/(self.sigma**3))
+        return gu_f*gu_s
+    
+    def __sigma_update()
 
     def __newEta(self, y, errp):
         # y: Salida calculada
