@@ -1269,11 +1269,12 @@ class QKLMS_AKB:
             i = 1
             self.initialize = False
             # err = 0.1
-            if u.shape[0] == 1:                
-                return
+            if u.shape[0] == 1:
+                return [0]
         else:
             i = 0
             y = np.empty((Nd,Dd))
+            
         while True:
             yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
             # self.__newEta(yi,err) #Nuevo eta
@@ -1286,7 +1287,7 @@ class QKLMS_AKB:
             else:              
                 if len(self.CB) >= self.K:                  
                     self.__sigma_update(u[i,:].reshape(-1,D),err) 
-                    print(self.sigma_n)
+#                    print(self.sigma_n)
                     self.CB.append(u[i,:])
                     self.a_coef.append((self.eta*err).item())
                     self.sigma = self.sigma_n[self.K-1]
@@ -1297,7 +1298,7 @@ class QKLMS_AKB:
                     self.a_coef.append((self.eta*err).item())
                                         
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-            # print("sigma = {} en iteracion {}".format(self.sigma,i))
+            print("sigma = {} en iteracion {}".format(self.sigma,i))
             if self.init_eval: 
                 y[i-1] = yi
             else:
@@ -1328,8 +1329,8 @@ class QKLMS_AKB:
     
     def __sigma_update(self,ui,e):
         import numpy as np
-        gu = np.array([self.__gu(e,i,ui) for i in range(self.K)])
-        self.sigma_n = self.sigma_n + gu
+        self.sigma_n = [self.sigma_n[i] + self.__gu(e,i,ui) for i in range(self.K)]
+#        print('sigma_n',self.sigma_n)
         return
         # for i in range(1,self.K):
         #     self.sigma_n[i] = sigma_ant[i-1] + self.__gu(e,dist_min_index,i-1,ui)

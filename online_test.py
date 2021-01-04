@@ -85,6 +85,9 @@ def main():
     if kaf == 'KRLS_ALD':
         from KAF import KRLS_ALD
         f = KRLS_ALD(sigma=sigma,epsilon=eps)
+    elif kaf == 'QKLMS_AKB':
+        from KAF import QKLMS_AKB
+        f = QKLMS_AKB(sigma_init=sigma,epsilon=eps,K=5)
     
     else:
         print('Unknown KAF')
