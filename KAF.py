@@ -1225,6 +1225,7 @@ class QKLMS_AKB:
         self.eta = eta #Learning rate
         self.epsilon = epsilon #Umbral de cuantizacion
         self.sigma = sigma_init #Sigma inicial
+        self.sigma_n = [sigma_init]
         self.mu = mu #Step size de AKB
         self.K = K #Numero de AKB
         self.CB = [] #Codebook
@@ -1283,21 +1284,20 @@ class QKLMS_AKB:
             if disti[min_index] <= self.epsilon:
               self.a_coef[min_index] =(self.a_coef[min_index] + self.eta*err).item()
             else:              
-                if len(self.CB) >= self.K:
-                    gu =  self.__gu(err,yi) 
-                    self.sigma = 
+                if len(self.CB) >= self.K:                  
+                    self.__sigma_update(u[i,:].reshape(-1,D),err) 
+                    print(self.sigma_n)
                     self.CB.append(u[i,:])
                     self.a_coef.append((self.eta*err).item())
+                    self.sigma = self.sigma_n[self.K-1]
                 else:
-                    self.sigma_pool[]
+                    print("else")
+                    self.sigma_n.append(self.sigma)
                     self.CB.append(u[i,:])
                     self.a_coef.append((self.eta*err).item())
-                    
-                    
-            
-            
+                                        
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-            
+            # print("sigma = {} en iteracion {}".format(self.sigma,i))
             if self.init_eval: 
                 y[i-1] = yi
             else:
@@ -1314,18 +1314,26 @@ class QKLMS_AKB:
         import numpy as np
         dist = cdist(np.asarray(self.CB), ui)
         K = np.exp(-0.5*(dist**2)/(self.sigma**2))
-        y = K .T.dot(np.asarray(self.a_coef))
+        y = K.T.dot(np.asarray(self.a_coef))
         return [y,dist]
     
-    def __gu(self,e,yi):
-        gu_f = self.mu*err* self.a_coef[min_index]*yi
+    def __gu(self,error,i,ui):
+        sigma = self.sigma_n[i]
         from scipy.spatial.distance import cdist
         import numpy as np
-        dist = cdist(np.asarray(self.CB), ui)
-        gu_s = (dist**2)/(self.sigma**3))
-        return gu_f*gu_s
+        S = len(self.CB)
+        dist = cdist(self.CB[S-self.K+i].reshape(1,-1), ui)
+        K = np.exp(-0.5*(dist.item()**2)/(sigma**2))
+        return self.mu*error.item()*self.a_coef[S-self.K+i]*K*(dist.item()**2)/(sigma**3)
     
-    def __sigma_update()
+    def __sigma_update(self,ui,e):
+        import numpy as np
+        gu = np.array([self.__gu(e,i,ui) for i in range(self.K)])
+        self.sigma_n = self.sigma_n + gu
+        return
+        # for i in range(1,self.K):
+        #     self.sigma_n[i] = sigma_ant[i-1] + self.__gu(e,dist_min_index,i-1,ui)
+        
 
     def __newEta(self, y, errp):
         # y: Salida calculada
