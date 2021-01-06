@@ -1292,7 +1292,6 @@ class QKLMS_AKB:
                     self.a_coef.append((self.eta*err).item())
                     self.sigma = self.sigma_n[self.K-1]
                 else:
-                    print("else")
                     self.sigma_n.append(self.sigma)
                     self.CB.append(u[i,:])
                     self.a_coef.append((self.eta*err).item())
@@ -1332,8 +1331,6 @@ class QKLMS_AKB:
         self.sigma_n = [self.sigma_n[i] + self.__gu(e,i,ui) for i in range(self.K)]
 #        print('sigma_n',self.sigma_n)
         return
-        # for i in range(1,self.K):
-        #     self.sigma_n[i] = sigma_ant[i-1] + self.__gu(e,dist_min_index,i-1,ui)
         
 
     def __newEta(self, y, errp):
@@ -1341,4 +1338,117 @@ class QKLMS_AKB:
         # errp: Error a priori 
         self.eta = (2*errp*y)/(errp**2 + 1)
         return False
+    
+
+
+class ALDKRLS_AKB:
+    """Y. Engel, S. Mannor and R. Meir, "The kernel recursive least-squares 
+    algorithm," in IEEE Transactions on Signal Processing, vol. 52, no. 8, 
+    pp. 2275-2285, Aug. 2004, doi: 10.1109/TSP.2004.830985."""
+    def __init__(self, mu = 0.9, sigma=0.9, epsilon=0.01, K=10,verbose=False):        
+        self.epsilon = epsilon
+        self.verbose = verbose
+        self.sigma = sigma
+        self.sigma_n = [sigma]
+        self.K_akb = K
+        self.mu = mu
+        #self.CB = [] #Codebook
+        #self.a_coef = [] #Coeficientes
+        #self.__CB_cov = [] #Covarianzas
+        #self.__CB_cov_sums = [] #Sumas acumuladas
+        #self.__CB_cov_prods = [] #Productos acumulados
+        #self.__n_cov = [] # n iteraciones en covarianza
+        #self.CB_growth = [] #Crecimiento del codebook por iteracion
+        self.initialize = True #Bandera de inicializacion
+        #self.init_eval = True
+        #self.evals = 0  #
+        
+        #self.testCB_means = [] #Prueba
+        #self.testDists = []
+           
+    def evaluate(self, u , d):
+        import numpy as np
+        from tqdm import tqdm
+        #Validación d tamaños de entrada
+        if len(u) != len(d):
+            raise ValueError('All of the input arguments must be of the same lenght')                
+        #Tamaños u y d
+        N,D = u.shape
+        Nd,Dd = d.shape
+        #Defs
+        rbf = lambda x,y : np.exp(-np.linalg.norm(x-y)**2/(2*self.sigma**2))
+        rbf_vec = lambda D,y : np.array([np.exp(-np.linalg.norm(x-y)**2/(2*self.sigma**2)) for x in D]).reshape(-1,)
+        #Inicializaciones
+        start = 0   
+        u_pred = []     
+        if self.initialize:
+            self.K     = np.array([[rbf(u[0],u[0])]])
+            self.Kinv  = np.array([[1.0/rbf(u[0],u[0])]])
+            self.alpha = np.array([d[0]/rbf(u[0],u[0])])
+            self.P     = np.array([[1]])
+            self.CB     = [u[0]]
+            #y = np.empty((Nd-1,Dd))
+            self.initialize = False
+            start = 1
+            u_pred.append(0)
+        
+        for n in tqdm(range(start,len(u))):
+            #1. Get new sample:
+            xn = u[n]
+            yn = d[n]
+            #2. Compute 
+            k_ant  = rbf_vec(self.CB,xn)  
+            knn    = rbf(xn,xn)
+            y_pred = self.alpha@k_ant
+            error = yn-y_pred
+            #3. ALD test
+            an    = self.Kinv@k_ant
+            delta = knn - k_ant@an  #an@self.K@an -2*k_ant@an + knn#knn - k_ant@an  
+            if self.verbose:
+                print(n,len(self.CB),delta,error/np.abs(yn))
+                
+            if delta > self.epsilon:#*(knn**2):
+                # Adaptive Kernel Bandwidth
+                if len(self.CB) >= self.K_akb:                  
+                    self.__sigma_update(xn.reshape(-1,D),error)                   
+                    self.sigma = self.sigma_n[self.K_akb-1]
+                else:
+                    self.sigma_n.append(self.sigma)
+                    
+                #4. Add xn to dictionary and update K, P, alpha
+                self.CB.append(xn)
+                self.K     = np.block([[self.K,                   k_ant.reshape(-1,1)],
+                                       [k_ant.reshape(1,-1), knn]])
+                self.Kinv  = np.block([[delta*self.Kinv+an.reshape(-1,1)@an.reshape(1,-1), -an.reshape(-1,1)],
+                                       [-an.reshape(1,-1),                            1]])/delta
+                self.P     = np.block([[self.P,                    np.zeros((len(self.P),1))],
+                                       [np.zeros((1,len(self.P))), 1]])    
+                self.alpha = np.hstack([self.alpha.reshape(-1,)-(yn-y_pred)*an/delta, 
+                               (yn-y_pred)/delta])
+                
+            else:
+                #5. Only update K, P, alpha
+                den = 1+an@self.P@an
+                q = self.P@an/den
+                self.P = self.P - self.P@an.reshape(-1,1)@an.reshape(1,-1)@self.P/den
+                self.alpha = self.alpha + (yn-y_pred)*self.Kinv@q
+            u_pred.append(y_pred)
+        return np.array(u_pred)
+     
+    def __gu(self,error,i,ui):
+        sigma = self.sigma_n[i]
+        from scipy.spatial.distance import cdist
+        import numpy as np
+        S = len(self.CB)
+        dist = cdist(self.CB[S-self.K_akb+i].reshape(1,-1), ui)
+        K = np.exp(-0.5*(dist.item()**2)/(sigma**2))
+        return self.mu*error.item()*self.alpha[S-self.K_akb+i]*K*(dist.item()**2)/(sigma**3)
+    
+    def __sigma_update(self,ui,e):
+        import numpy as np
+        self.sigma_n = [self.sigma_n[i] + self.__gu(e,i,ui) for i in range(self.K_akb)]
+#        print('sigma_n',self.sigma_n)
+        return
+      
+    
     
