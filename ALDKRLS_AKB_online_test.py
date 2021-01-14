@@ -7,17 +7,30 @@ Created on Tue Jan  5 15:12:50 2021
 ALDKRLS_AKB Online test
 """
 
-def db(samples=1000,system='lorenz'):
+def db(samples=1000,system='lorenz',L=40):
     import numpy as np
     import TimeSeriesGenerator as tsg
-    x, y, z = tsg.chaoticSystem(samples=samples+10,systemType=system)
-    ua = x[-samples-2:-2].reshape(-1,1)
-    ub = y[-samples-3:-3].reshape(-1,1)
-    return np.concatenate((ua,ub), axis=1), z[-samples-1:-1].reshape(-1,1)
+    x, y, z = tsg.chaoticSystem(samples=samples,systemType=system)
+    ux = np.array([x[i-L:i] for i in range(L,len(x))])
+    uy = np.array([y[i-L:i] for i in range(L,len(y))])
+    u = np.concatenate((ux,uy), axis=1) # INPUT
+    d = np.array([z[i] for i in range(L,len(z))]).reshape(-1,1)
+    return u,d
 
-def online_plot(samples, system, kaf):
+def db_z(samples=1000,system='lorenz',L=40):
+    import numpy as np
+    import TimeSeriesGenerator as tsg
+    x, y, z = tsg.chaoticSystem(samples=samples,systemType=system)
+    ux = np.array([x[i-L:i] for i in range(L,len(x))])
+    uy = np.array([y[i-L:i] for i in range(L,len(y))])
+    uz = np.array([z[i-1] for i in range(L,len(z))]).reshape(-1,1)
+    u = np.concatenate((ux,uy,uz), axis=1) # INPUT
+    d = np.array([z[i] for i in range(L,len(z))]).reshape(-1,1)
+    return u,d
+
+def online_plot(samples, system, kaf, L=40):
     #1. Get data
-    u,d = db(samples,system)
+    u,d = db(samples,system,L)
     #2. Inicializacion
     print("Online test on {} system:".format(system))
     y_pred = []
@@ -42,15 +55,21 @@ def online_plot(samples, system, kaf):
             cb_ant = len(kaf.CB)
         i+=1
         # plt.ylim([-dmax-dmax*0.1,dmax+dmax*0.1])
+    fig = plt.gcf()
+    fig.set_size_inches(18.5, 10.5, forward=True)
     plt.plot(y_tar,'c', label="Target")
     plt.plot(y_pred, 'magenta', label="Predict")
     plt.legend()
     plt.title("Online test on {}    -    $\sigma = {}$".format(system,kaf.sigma))
     plt.scatter(new_add_x,new_add_y,c="magenta",marker="*")
     plt.show()
-    print("Final Codebook Size -> {}".format(len(kaf.CB)))       
+    fig.savefig('KRLS_ALD_AKB/{}_test_{}_samples_.png'.format(system,samples), dpi=300)
+    print("Final Codebook Size -> {}".format(len(kaf.CB)))
+     
     return
 
+
+# KRLS ALD with AKB
 import KAF
 samples = 5000
 
@@ -70,6 +89,26 @@ klms = KAF.ALDKRLS_AKB(sigma=10,K_akb=5,epsilon=1e-4)
 online_plot(samples,'rossler',klms)
 
 klms = KAF.ALDKRLS_AKB(sigma=10,K_akb=10,epsilon=1e-4)
+online_plot(samples,'wang',klms)
+
+
+# KRLS ALD
+klms = KAF.KRLS_ALD(sigma=50,epsilon=1e-4)
+online_plot(samples,'lorenz',klms)
+
+klms = KAF.KRLS_ALD(sigma=50,epsilon=1e-4)
+online_plot(samples,'chua',klms)
+
+klms = KAF.KRLS_ALD(sigma=10,epsilon=1e-4)
+online_plot(samples,'duffing',klms)
+
+klms = KAF.KRLS_ALD(sigma=10,epsilon=1e-4)
+online_plot(samples,'nose_hoover',klms)
+
+klms = KAF.KRLS_ALD(sigma=10,epsilon=1e-4)
+online_plot(samples,'rossler',klms)
+
+klms = KAF.KRLS_ALD(sigma=10,epsilon=1e-4)
 online_plot(samples,'wang',klms)
 
 # Pruebas en atractores

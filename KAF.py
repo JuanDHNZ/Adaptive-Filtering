@@ -1344,7 +1344,12 @@ class QKLMS_AKB:
 class ALDKRLS_AKB:
     """Y. Engel, S. Mannor and R. Meir, "The kernel recursive least-squares 
     algorithm," in IEEE Transactions on Signal Processing, vol. 52, no. 8, 
-    pp. 2275-2285, Aug. 2004, doi: 10.1109/TSP.2004.830985."""
+    pp. 2275-2285, Aug. 2004, doi: 10.1109/TSP.2004.830985.
+    
+    AND
+    
+    
+    """
     def __init__(self, mu = 0.9, sigma=0.9, epsilon=0.01, K_akb=10,verbose=False):        
         self.epsilon = epsilon
         self.verbose = verbose
