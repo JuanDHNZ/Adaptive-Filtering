@@ -88,7 +88,12 @@ def main():
     elif kaf == 'QKLMS_AKB':
         from KAF import QKLMS_AKB
         f = QKLMS_AKB(sigma_init=sigma,epsilon=eps,K=5)
-    
+    elif kaf == 'ALDKRLS_AKB_2':
+        from KAF import ALDKRLS_AKB_2
+        f = ALDKRLS_AKB_2(sigma=sigma,epsilon=eps,K_akb=10)
+    elif kaf == 'QKLMS_AMK':
+        from KAF import QKLMS_AMK
+        f = QKLMS_AMK(sigma=sigma,epsilon=eps)   
     else:
         print('Unknown KAF')
         return
