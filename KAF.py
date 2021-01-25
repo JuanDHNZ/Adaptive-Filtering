@@ -50,8 +50,9 @@ class BGMM_KLMS:
         N,D = u.shape
         Nd,Dd = d.shape
         #Inicializaciones
+        y = []
         if self.initialize:
-            y = np.empty((Nd-1,Dd))
+            y = []
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
             self.CB_cov.append(np.eye(D)) #Covarianzas
@@ -62,20 +63,21 @@ class BGMM_KLMS:
             #Salida           
             i = 1
             self.initialize = False
+            y.append(0)
             # err = 0.1
-            if u.shape[0] == 1:                
-                return
         else:
-            y = np.empty((Nd,Dd))
             i = 0
         dist_mahal_test = []
-        while True:
-            yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida 
-            d_mahal = self.__dmahal(u[i,:].reshape(-1,D)) #Distancia de Mahalanobis 
+        from tqdm import tqdm
+        for i in tqdm(range(i,len(u))):
+            ui = u[i]
+            di = d[i]
+            yi,disti = self.__output(ui.reshape(-1,D)) #Salida 
+            d_mahal = self.__dmahal(ui.reshape(-1,D)) #Distancia de Mahalanobis 
             self.testDists.append(d_mahal)
             dist_mahal_test.append(disti) ###TEST
             # self.__newEta(yi,err) #Nuevo eta
-            err = d[i] - yi # Error
+            err = di - yi # Error
             #Cuantizacion
             min_index = np.argmin(d_mahal)
             
@@ -94,24 +96,10 @@ class BGMM_KLMS:
               self.testCB_means.append(np.zeros(2,)) #Prueba
             
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-            
-            if self.init_eval: 
-                y[i-1] = yi
-            else:
-                y[i] = yi
-
-            if(i == N-1):
-                # print(len(self.__CB_cov))
-                # for k in range(len(self.__CB_cov)):
-                #     print(self.__n_cov[k])
-                #     print(self.__CB_cov[k]/self.__n_cov[k])
-                if self.init_eval:
-                    self.init_eval = False           
-                return y
-            i+=1 
+            y.append(yi) #Salida
+        return np.array(y)
 
     def __output(self,ui):
-        from scipy.spatial.distance import cdist
         import numpy as np
         # dist = cdist(np.asarray(self.CB), ui)
         dist = self.__dmahal2(ui)
@@ -258,7 +246,6 @@ class GMM_KLMS:
         self.__n_cov = [] # n iteraciones en covarianza
         self.CB_growth = [] #Crecimiento del codebook por iteracion
         self.initialize = True #Bandera de inicializacion
-        self.init_eval = True
         self.evals = 0  #
         
         self.fitFlag = False
@@ -293,8 +280,9 @@ class GMM_KLMS:
         N,D = u.shape
         Nd,Dd = d.shape
         #Inicializaciones
+        y = []
         if self.initialize:
-            y = np.empty((Nd-1,Dd))
+
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
             self.CB_cov.append(np.eye(D)) #Covarianzas
@@ -305,20 +293,19 @@ class GMM_KLMS:
             #Salida           
             i = 1
             self.initialize = False
-            # err = 0.1
-            if u.shape[0] == 1:                
-                return
+            y.append(0)
         else:
-            y = np.empty((Nd,Dd))
             i = 0
         dist_mahal_test = []
-        while True:
-            yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida 
-            d_mahal = self.__dmahal(u[i,:].reshape(-1,D)) #Distancia de Mahalanobis 
+        from tqdm import tqdm
+        for i in tqdm(range(i,len(u))):
+            ui = u[i]
+            di = u[i]
+            yi,disti = self.__output(ui.reshape(-1,D)) #Salida 
+            d_mahal = self.__dmahal(ui.reshape(-1,D)) #Distancia de Mahalanobis 
             self.testDists.append(d_mahal)
-            dist_mahal_test.append(disti) ###TEST
-            # self.__newEta(yi,err) #Nuevo eta
-            err = d[i] - yi # Error
+            dist_mahal_test.append(disti) #test
+            err = di - yi # Error
             #Cuantizacion
             min_index = np.argmin(d_mahal)
             
@@ -337,24 +324,10 @@ class GMM_KLMS:
               self.testCB_means.append(np.zeros(2,)) #Prueba
             
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-            
-            if self.init_eval: 
-                y[i-1] = yi
-            else:
-                y[i] = yi
-
-            if(i == N-1):
-                # print(len(self.__CB_cov))
-                # for k in range(len(self.__CB_cov)):
-                #     print(self.__n_cov[k])
-                #     print(self.__CB_cov[k]/self.__n_cov[k])
-                if self.init_eval:
-                    self.init_eval = False           
-                return y
-            i+=1 
+            y.append(yi) #Salida
+        return y
 
     def __output(self,ui):
-        from scipy.spatial.distance import cdist
         import numpy as np
         # dist = cdist(np.asarray(self.CB), ui)
         dist = self.__dmahal2(ui)
@@ -501,7 +474,6 @@ class QKLMS3:
         self.__n_cov = [] # n iteraciones en covarianza
         self.CB_growth = [] #Crecimiento del codebook por iteracion
         self.initialize = True #Bandera de inicializacion
-        self.init_eval = True
         self.evals = 0  #
         
         self.fitFlag = False
@@ -536,8 +508,8 @@ class QKLMS3:
         N,D = u.shape
         Nd,Dd = d.shape
         #Inicializaciones
+        y = []
         if self.initialize:
-            y = np.empty((Nd-1,Dd))
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
             self.CB_cov.append(np.eye(D)) #Covarianzas
@@ -547,21 +519,26 @@ class QKLMS3:
             self.testCB_means.append(np.zeros(2,))#Prueba
             #Salida           
             i = 1
+            y.append(0)
             self.initialize = False
             # err = 0.1
             if u.shape[0] == 1:                
                 return
         else:
-            y = np.empty((Nd,Dd))
             i = 0
         dist_mahal_test = []
-        while True:
-            yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida 
-            d_mahal = self.__dmahal(u[i,:].reshape(-1,D)) #Distancia de Mahalanobis 
+        
+        ui = u[i]
+        di = d[i]
+        
+        from tqdm import tqdm
+        for i in tqdm(range(i,len(u))):
+            yi,disti = self.__output(ui.reshape(-1,D)) #Salida 
+            d_mahal = self.__dmahal(ui.reshape(-1,D)) #Distancia de Mahalanobis 
             self.testDists.append(d_mahal)
             dist_mahal_test.append(disti) ###TEST
             # self.__newEta(yi,err) #Nuevo eta
-            err = d[i] - yi # Error
+            err = di - yi # Error
             #Cuantizacion
             min_index = np.argmin(d_mahal)
             
@@ -580,24 +557,10 @@ class QKLMS3:
               self.testCB_means.append(np.zeros(2,)) #Prueba
             
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-            
-            if self.init_eval: 
-                y[i-1] = yi
-            else:
-                y[i] = yi
-
-            if(i == N-1):
-                # print(len(self.__CB_cov))
-                # for k in range(len(self.__CB_cov)):
-                #     print(self.__n_cov[k])
-                #     print(self.__CB_cov[k]/self.__n_cov[k])
-                if self.init_eval:
-                    self.init_eval = False           
-                return y
-            i+=1 
+            y.append(yi)
+        return np.array(y)
 
     def __output(self,ui):
-        from scipy.spatial.distance import cdist
         import numpy as np
         # dist = cdist(np.asarray(self.CB), ui)
         dist = self.__dmahal2(ui)
@@ -721,29 +684,13 @@ class QKLMS3:
         return
             
     def predict(self, u):
-        import numpy as np
         #Validaciones
         if not self.fitFlag:
             raise ValueError("Fit method must be runed first")
         if u is None:
-            raise ValueError("Parameter u is missing")
-    
-                
-        #Tamaños u y d
-        N,D = u.shape
-
-        y = np.empty((N,D), dtype=float)
-        i = 0
-        
+            raise ValueError("Parameter u is missing")               
+        #Tamaños u y d   
         y,d = self.__output(u)
-        # while True:           
-        #     y[i],disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
-            
-        #     if(i == N-1):
-        #         if self.init_eval:
-        #             self.init_eval = False           
-        #         return np.array(y)
-        #     i+=1
         return y
     
     def score(self, X=None, y=None):
@@ -787,7 +734,6 @@ class QKLMS2:
         self.n_cov = [] # n iteraciones en covarianza
         self.CB_growth = [] #Crecimiento del codebook por iteracion
         self.initialize = True #Bandera de inicializacion
-        self.init_eval = True
         self.evals = 0  #
         
         self.fitFlag = False
@@ -822,8 +768,8 @@ class QKLMS2:
         N,D = u.shape
         Nd,Dd = d.shape
         #Inicializaciones
+        y = []
         if self.initialize:
-            y = np.empty((Nd-1,Dd))
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
             self.CB_cov.append(np.eye(D)) #Covarianzas
@@ -834,13 +780,14 @@ class QKLMS2:
             #Salida           
             i = 1
             self.initialize = False
-            # err = 0.1
+            y.append(0)
             if u.shape[0] == 1:                
                 return
         else:
-            y = np.empty((Nd,Dd))
             i = 0
-        while True:
+         
+        from tqdm import tqdm
+        for i in tqdm(range(i,len(u))):
             yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
             d_mahal = self.__dmahal(u[i,:].reshape(-1,D)) #Distancia de Mahalanobis 
             self.testDists.append(d_mahal)
@@ -864,22 +811,8 @@ class QKLMS2:
               self.testCB_means.append(np.zeros(2,)) #Prueba
             
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-            
-            if self.init_eval: 
-                y[i-1] = yi
-            else:
-                y[i] = yi
-
-            if(i == N-1):
-                # print(len(self.CB_cov))
-                # for k in range(len(self.CB_cov)):
-                #     print(self.__n_cov[k])
-                #     print(self.CB_cov[k]/self.__n_cov[k])
-                if self.init_eval:
-                    self.init_eval = False           
-                return y
-            i+=1 
-
+            y.append(yi)
+        return np.array(y)
     def __output(self,ui):
         from scipy.spatial.distance import cdist
         import numpy as np
@@ -1000,24 +933,9 @@ class QKLMS2:
         if not self.fitFlag:
             raise ValueError("Fit method must be runed first")
         if u is None:
-            raise ValueError("Parameter u is missing")
-    
-                
-        #Tamaños u y d
-        N,D = u.shape
-
-        y = np.empty((N,D), dtype=float)
-        i = 0
-        
+            raise ValueError("Parameter u is missing")    
+        #Tamaños u y d    
         y,d = self.__output(u)
-        # while True:           
-        #     y[i],disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
-            
-        #     if(i == N-1):
-        #         if self.init_eval:
-        #             self.init_eval = False           
-        #         return np.array(y)
-        #     i+=1
         return y
     
     def score(self, X=None, y=None):
@@ -1056,8 +974,7 @@ class QKLMS:
         self.__CB_cov_prods = [] #Productos acumulados
         self.__n_cov = [] # n iteraciones en covarianza
         self.CB_growth = [] #Crecimiento del codebook por iteracion
-        self.initialize = True #Bandera de inicializacion
-        self.init_eval = True
+        self.initialize = True #Bandera de inicializacion   
         self.evals = 0  #
         
         self.testCB_means = [] #Prueba
@@ -1081,45 +998,40 @@ class QKLMS:
         #Tamaños u y d
         N,D = u.shape
         Nd,Dd = d.shape
+        
         #Inicializaciones
+        y = []
         if self.initialize:
-            y = np.empty((Nd-1,Dd))
+
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
-            #Salida           
-            i = 1
             self.initialize = False
-            # err = 0.1
+            start = 1
+            y.append(0)
             if u.shape[0] == 1:                
                 return
         else:
-            i = 0
-            y = np.empty((Nd,Dd))
-        while True:
-            yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
+            start = 0      
+        
+        from tqdm import tqdm
+        for i in tqdm(range(start,len(u))):
+            ui = u[i]
+            di = d[i]           
+            yi,disti = self.__output(ui.reshape(-1,D)) #Salida       
             # self.__newEta(yi,err) #Nuevo eta
-            err = d[i] - yi # Error
+            err = (di - yi).item() # Error
             #Cuantizacion
             min_index = np.argmin(disti)
             
             if disti[min_index] <= self.epsilon:
-              self.a_coef[min_index] =(self.a_coef[min_index] + self.eta*err).item()
+              self.a_coef[min_index] =self.a_coef[min_index] + self.eta*err
             else:
               self.CB.append(u[i,:])
-              self.a_coef.append((self.eta*err).item())
-            
+              self.a_coef.append(self.eta*err) 
+              
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-            
-            if self.init_eval: 
-                y[i-1] = yi
-            else:
-                y[i] = yi
-
-            if(i == N-1):
-                if self.init_eval:
-                    self.init_eval = False           
-                return y
-            i+=1 
+            y.append(yi)       
+        return y
 
     def __output(self,ui):
         from scipy.spatial.distance import cdist
@@ -1143,20 +1055,9 @@ class KRLS_ALD:
         self.epsilon = epsilon
         self.verbose = verbose
         self.sigma = sigma
-        #self.CB = [] #Codebook
-        #self.a_coef = [] #Coeficientes
-        #self.__CB_cov = [] #Covarianzas
-        #self.__CB_cov_sums = [] #Sumas acumuladas
-        #self.__CB_cov_prods = [] #Productos acumulados
-        #self.__n_cov = [] # n iteraciones en covarianza
-        #self.CB_growth = [] #Crecimiento del codebook por iteracion
         self.initialize = True #Bandera de inicializacion
-        #self.init_eval = True
-        #self.evals = 0  #
-        
-        #self.testCB_means = [] #Prueba
-        #self.testDists = []
-           
+
+                 
     def evaluate(self, u , d):
         import numpy as np
         from tqdm import tqdm
@@ -1166,7 +1067,7 @@ class KRLS_ALD:
         #Tamaños u y d
         N,D = u.shape
         Nd,Dd = d.shape
-        #Defs
+        #Definiciones
         rbf = lambda x,y : np.exp(-np.linalg.norm(x-y)**2/(2*self.sigma**2))
         rbf_vec = lambda D,y : np.array([np.exp(-np.linalg.norm(x-y)**2/(2*self.sigma**2)) for x in D]).reshape(-1,)
         #Inicializaciones
@@ -1230,15 +1131,10 @@ class QKLMS_AKB:
         self.K = K #Numero de AKB
         self.CB = [] #Codebook
         self.a_coef = [] #Coeficientes
-        self.__CB_cov = [] #Covarianzas
-        self.__CB_cov_sums = [] #Sumas acumuladas
-        self.__CB_cov_prods = [] #Productos acumulados
-        self.__n_cov = [] # n iteraciones en covarianza
         self.CB_growth = [] #Crecimiento del codebook por iteracion
         self.initialize = True #Bandera de inicializacion
-        self.init_eval = True
         self.evals = 0  #
-        
+
         self.testCB_means = [] #Prueba
         self.testDists = []
         
@@ -1261,53 +1157,43 @@ class QKLMS_AKB:
         N,D = u.shape
         Nd,Dd = d.shape
         #Inicializaciones
+        y = []
         if self.initialize:
-            y = np.empty((Nd-1,Dd))
-            self.CB.append(u[0,:]) #Codebook
-            self.a_coef.append(self.eta*d[0,:]) #Coeficientes
-            #Salida           
-            i = 1
+            self.CB.append(u[0]) #Codebook
+            self.a_coef.append(self.eta*d[0]) #Coeficientes          
+            start = 1
             self.initialize = False
-            # err = 0.1
+
             if u.shape[0] == 1:
                 return [0]
         else:
-            i = 0
-            y = np.empty((Nd,Dd))
+            start = 0
+        from tqdm import tqdm 
+        for i in tqdm(range(start,len(u))):
+            ui = u[i]
+            di = d[i]
             
-        while True:
-            yi,disti = self.__output(u[i,:].reshape(-1,D)) #Salida       
-            # self.__newEta(yi,err) #Nuevo eta
-            err = d[i] - yi # Error
-            #Cuantizacion
+            yi,disti = self.__output(ui.reshape(-1,D)) #Salida       
+            err = (di - yi).item() # Error
             min_index = np.argmin(disti)
             
             if disti[min_index] <= self.epsilon:
-              self.a_coef[min_index] =(self.a_coef[min_index] + self.eta*err).item()
+              self.a_coef[min_index] = self.a_coef[min_index] + self.eta*err
             else:              
                 if len(self.CB) >= self.K:                  
-                    self.__sigma_update(u[i,:].reshape(-1,D),err) 
-#                    print(self.sigma_n)
-                    self.CB.append(u[i,:])
-                    self.a_coef.append((self.eta*err).item())
+                    self.__sigma_update(ui.reshape(-1,D),err) 
+                    self.CB.append(ui)
+                    self.a_coef.append(self.eta*err)
                     self.sigma = self.sigma_n[self.K-1]
                 else:
                     self.sigma_n.append(self.sigma)
                     self.CB.append(u[i,:])
-                    self.a_coef.append((self.eta*err).item())
+                    self.a_coef.append(self.eta*err)
                                         
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
             print("sigma = {} en iteracion {}".format(self.sigma,i))
-            if self.init_eval: 
-                y[i-1] = yi
-            else:
-                y[i] = yi
-
-            if(i == N-1):
-                if self.init_eval:
-                    self.init_eval = False           
-                return y
-            i+=1 
+            y.append(yi)
+        return y
 
     def __output(self,ui):
         from scipy.spatial.distance import cdist
@@ -1324,7 +1210,7 @@ class QKLMS_AKB:
         S = len(self.CB)
         dist = cdist(self.CB[S-self.K+i].reshape(1,-1), ui)
         K = np.exp(-0.5*(dist.item()**2)/(sigma**2))
-        return self.mu*error.item()*self.a_coef[S-self.K+i]*K*(dist.item()**2)/(sigma**3)
+        return self.mu*error*self.a_coef[S-self.K+i]*K*(dist.item()**2)/(sigma**3)
     
     def __sigma_update(self,ui,e):
         import numpy as np
@@ -1356,19 +1242,7 @@ class ALDKRLS_AKB:
         self.sigma_n = [sigma]
         self.K_akb = K_akb
         self.mu = mu
-        #self.CB = [] #Codebook
-        #self.a_coef = [] #Coeficientes
-        #self.__CB_cov = [] #Covarianzas
-        #self.__CB_cov_sums = [] #Sumas acumuladas
-        #self.__CB_cov_prods = [] #Productos acumulados
-        #self.__n_cov = [] # n iteraciones en covarianza
-        #self.CB_growth = [] #Crecimiento del codebook por iteracion
         self.initialize = True #Bandera de inicializacion
-        #self.init_eval = True
-        #self.evals = 0  #
-        
-        #self.testCB_means = [] #Prueba
-        #self.testDists = []
            
     def evaluate(self, u , d):
         import numpy as np
@@ -1379,7 +1253,7 @@ class ALDKRLS_AKB:
         #Tamaños u y d
         N,D = u.shape
         Nd,Dd = d.shape
-        #Defs
+        #Definicioness
         rbf = lambda x,y : np.exp(-np.linalg.norm(x-y)**2/(2*self.sigma**2))
         rbf_vec = lambda D,y : np.array([np.exp(-np.linalg.norm(x-y)**2/(2*self.sigma**2)) for x in D]).reshape(-1,)
         #Inicializaciones
@@ -1451,9 +1325,7 @@ class ALDKRLS_AKB:
         return self.mu*error.item()*self.alpha[S-self.K_akb+i]*K*(dist.item()**2)/(sigma**3)
     
     def __sigma_update(self,ui,e):
-        import numpy as np
         self.sigma_n = [self.sigma_n[i] + self.__gu(e,i,ui) for i in range(self.K_akb)]
-#        print('sigma_n',self.sigma_n)
         return
       
     
@@ -1696,7 +1568,7 @@ class QKLMS_AMK:
         self.initialize = True #Bandera de inicializacion
         self.init_eval = True
         self.evals = 0  #
-        
+        self.error = 0
         self.testCB_means = [] #Prueba
         self.testDists = []
         
@@ -1719,41 +1591,42 @@ class QKLMS_AMK:
         rbf = lambda x,y : np.exp(-0.5*cdist(x, y,'mahalanobis', VI=np.dot(self.A.T,self.A))**2)
         
         #Inicializaciones
+        y = []
         if self.initialize:
-            y = []
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
             self.A = np.eye(D)/self.sigma
             #Salida           
-            i = 1
+            start = 1
             self.initialize = False
             # err = 0.1
             y.append(0)
         else:
-            i = 0            
-        while True:
+            start = 0
+            
+        from tqdm import tqdm
+        for i in tqdm(range(start,len(u))):
             ui = u[i]
             di = d[i]
             yi,disti = self.__output(ui.reshape(-1,D) ) #Salida             
-            err = (d[i] - yi).item() # Error
-           
+            err = (di - yi).item() # Error
+            self.error = err
             #Cuantizacion
             min_index = np.argmin(disti)           
             if disti[min_index] <= self.epsilon:
               self.a_coef[min_index] = self.a_coef[min_index] + self.eta*err
             else: 
                 #self.A = err*self.A self.a_coef.T.@K *disti*disti
-                da = [self.a_coef[j]*rbf(self.CB[j].reshape(1,-1),ui)*(self.CB[j] - ui).T.dot((self.CB[j] - ui)) for j in range(len(self.CB))]
-                da  = np.sum(da,axis=0)                       
-                self.A = err*self.A@da
-                self.CB.append(u[i,:])
+                da = [self.a_coef[j]*rbf(self.CB[j].reshape(1,-1),ui.reshape(-1,D))*(self.CB[j] - ui).T.dot((self.CB[j] - ui)) for j in range(len(self.CB))]
+                da  = np.sum(da,axis=0)
+
+                self.A = err*self.A*da.item()
+                self.CB.append(ui)
                 self.a_coef.append((self.eta*err))
                 
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-
-            if(i == N-1):       
-                return np.array(y)
-            i+=1 
+            y.append(yi)
+        return y
 
     def __output(self,ui):
         from scipy.spatial.distance import cdist
@@ -1806,53 +1679,45 @@ class QKLMS_M:
         Nd,Dd = d.shape
         
         #Inicializaciones
-        if self.initialize:
-            y = np.empty((Nd-1,Dd))
-            self.CB.append(u[0,:]) #Codebook
-            self.a_coef.append(self.eta*d[0,:]) #Coeficientes
+        y = []
+        if self.initialize:           
+            self.CB.append(u[0]) #Codebook
+            self.a_coef.append(self.eta*d[0]) #Coeficientes
             if type(self.A) is not np.ndarray:
                 self.A = np.eye(D)
             #Salida           
-            i = 1
+            start = 1
             self.initialize = False
             # err = 0.1
+            y.append(0)
             if u.shape[0] == 1:
-                return [0]
+                return
         else:
-            i = 0
-            y = np.empty((Nd,Dd))
-            
-        while True:
-            ui = u[i,:].reshape(-1,D) 
+            start = 0
+        
+        from tqdm import tqdm
+        for i in tqdm(range(start,len(u))):          
+            ui = u[i,:].reshape(-1,D)
+            di = d[i]
             yi,disti,K = self.__output(ui) #Salida  
-            err = d[i] - yi # Error
-            print("Error[{}] = {}".format(i,err/d[i]))
+            err = (di - yi).item() # Error
+            # print("Error[{}] = {}".format(i,err/di))
             #Cuantizacion
             min_index = np.argmin(disti)           
             if disti[min_index] <= self.epsilon:
-                self.a_coef[min_index] = (self.a_coef[min_index] + self.eta*err).item()
+                self.a_coef[min_index] = self.a_coef[min_index] + self.eta*err
             else: 
                 self.CB.append(u[i,:])
-                self.a_coef.append((self.eta*err).item())
+                self.a_coef.append(self.eta*err)
                 
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-
-            if self.init_eval: 
-                y[i-1] = yi
-            else:
-                y[i] = yi
-
-            if(i == N-1):
-                if self.init_eval:
-                    self.init_eval = False           
-                return y
-            i+=1 
+            y.append(yi)
+        return y
 
     def __output(self,ui):
         from scipy.spatial.distance import cdist
         import numpy as np
         dist = cdist(self.CB, ui,'mahalanobis', VI=np.dot(self.A.T,self.A))
-        # dist = [cdist(self.CB[k].reshape(1,-1), ui,'mahalanobis', VI=np.dot(self.A.T,self.A)) for k in range(len(self.CB))]
         K = np.exp(-0.5*(dist**2))
         y = K.T.dot(np.asarray(self.a_coef))
         return [y,dist,K]

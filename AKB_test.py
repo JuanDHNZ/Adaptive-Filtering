@@ -9,7 +9,7 @@ import numpy as np
 import KAF
 import TimeSeriesGenerator as tsg
 """ATRACTOR DE LORENZ"""
-samples = 10000
+samples = 1000
 x, y, z = tsg.chaoticSystem(samples=samples+10,systemType="lorenz")
 ua = x[-samples-2:-2].reshape(-1,1)
 ub = y[-samples-3:-3].reshape(-1,1)

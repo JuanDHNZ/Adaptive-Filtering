@@ -92,12 +92,14 @@ for n in tqdm(range(start,N)):
     y_tar.append(di.item())
     y_pred.append(yi.item())
     
-    # Grafica de validacion 
-    # plt.scatter(n,yi,marker="X",label="predict")
-    # plt.scatter(n,di,marker="x",label="target")
-    # plt.ylim([0,60])
-    # plt.legend()
-    # plt.show()
+    if n > 700:
+        # Grafica de validacion 
+        plt.scatter(n,yi,marker="X",label="predict")
+        plt.scatter(n,di,marker="x",label="target")
+        plt.ylim([0,60])
+        plt.legend()
+        plt.title("Error = {}".format(e))
+        plt.show()
     
     # plt.imshow(A)
     # plt.show()

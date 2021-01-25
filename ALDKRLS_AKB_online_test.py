@@ -48,6 +48,7 @@ def online_plot(samples, system, kaf, L=40):
     for ui,di in zip(u,d):
         y_pred.append(kaf.evaluate(ui.reshape(1,-1),di.reshape(-1,1)))
         y_tar.append(di)
+        print("Error {} en iteracion {}".format(kaf.error,i))
         if cb_ant != len(kaf.CB):
             new_add_x.append(i)
             new_add_y.append(y_pred[-1])
@@ -71,11 +72,11 @@ def online_plot(samples, system, kaf, L=40):
 
 # KRLS ALD with AKB
 import KAF
-samples = 5000
+samples = 1000
 L = 10
 
 f = KAF.QKLMS_AMK(epsilon=1, sigma=1)
-u,d,kaf = online_plot(samples,'chua',f)
+u,d,kaf = online_plot(samples,'lorenz',f)
 
 f1 = KAF.QKLMS_AMK(epsilon=1, sigma=1)
 y_pred = f1.evaluate(u,d)
