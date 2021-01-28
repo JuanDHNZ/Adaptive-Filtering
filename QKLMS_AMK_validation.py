@@ -101,8 +101,8 @@ for n in tqdm(range(start,N)):
         plt.title("Error = {}".format(e))
         plt.show()
     
-    # plt.imshow(A)
-    # plt.show()
+    plt.imshow(A)
+    plt.show()
     
     min_dis = np.argmin(dis) #Index de distancia minima 
     testDists.append(dis[min_dis])         
