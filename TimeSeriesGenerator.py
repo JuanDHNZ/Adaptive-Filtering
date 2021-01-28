@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import chaoticTimeSeries as cts
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 
-def chaoticSystem(samples = 1000,systemType = None):
+def chaoticSystem(samples = 1000,systemType = None,display=False):
     
     # Dictionaty of available attractors
     attractors = {"chua": cts.chua,
@@ -46,13 +46,14 @@ def chaoticSystem(samples = 1000,systemType = None):
         Z[i + 1] = Z[i] + (z_dot * dt)
     
     # 3D Plot
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
-    ax.plot(X, Y, Z, lw=0.5)
-    ax.set_xlabel("X Axis")
-    ax.set_ylabel("Y Axis")
-    ax.set_zlabel("Z Axis")
-    ax.set_title(str(systemType).capitalize() +" Attractor")
-    plt.show()
+    if display:
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.plot(X, Y, Z, lw=0.5)
+        ax.set_xlabel("X Axis")
+        ax.set_ylabel("Y Axis")
+        ax.set_zlabel("Z Axis")
+        ax.set_title(str(systemType).capitalize() +" Attractor")
+        plt.show()
     
     return X, Y, Z

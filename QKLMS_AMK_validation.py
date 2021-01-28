@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 """
 Created on Fri Jan 22 09:55:14 2021
 
@@ -31,15 +31,15 @@ def db_z(samples=1000,system='lorenz',L=40):
 
 
 # 1. Entrada y salida esperada
-S = 1000
+S = 4000
 sys = 'lorenz'
 u,d = db(samples=S,system=sys)
 # u,d = db_z(samples=S,system=sys)
 
 # 2. Parametros e Inicializacion
-eta = 0.9 #Learning rate
-epsilon = 1 #Umbral de cuantizacion
+epsilon = 0.5 #Umbral de cuantizacion
 sigma = 0.1 #Ancho de banda
+eta = 0.5#Learning rate QKLMS
 
 CB = [] #Codebook
 a_coef = [] #Coeficientes
@@ -67,7 +67,7 @@ rbf = lambda x,y : np.exp(-0.5*cdist(x, y,'mahalanobis', VI=np.dot(A.T,A))**2)
 
 CB.append(u[0]) #Codebook
 a_coef.append(eta*d[0]) #Coeficientes
-A = np.eye(D)/sigma #Matriz de proyeccion
+A0 = np.eye(D)/sigma #Matriz de proyeccion
 
 start = 1
 
@@ -75,9 +75,33 @@ y_tar = []
 y_pred = []
 e_t = []
 
+#PCA
+from sklearn.decomposition import PCA
+pca = PCA(n_components=5).fit(u[:100,:])
+A0 = pca.components_/100
+
+tmp = np.dot(u[:100,:],A0.T)
+# tmp = pca.transform(u[:100,:])
+dd = np.exp(-0.5*cdist(tmp,tmp)**2)
+
+# plt.imshow(dd)
+# plt.colorbar()
+# plt.show()
+
+
+#Inicializacion AMK
+A_k = [A0]
+K_A = 10 #Memory
+mu = 0.001#Step size A update
+
+
+nda_t = []
+na_t = []
+
 
 # Filtro
 for n in tqdm(range(start,N)):
+    A = A_k[-1]
     ui = u[n]
     di = d[n]
     dis = cdist(CB, ui.reshape(1,-1),'mahalanobis', VI=np.dot(A.T,A)) # Distancia de mahalanobis
@@ -85,91 +109,105 @@ for n in tqdm(range(start,N)):
     yi = K.T.dot(np.array(a_coef)) # Prediccion   
     e = (di - yi).item() # Error
     
-    dist_m = [distance.mahalanobis(CB[k],ui,A.T.dot(A)) for k in range(len(CB))]
-    d_m.append(dist_m)
+    d_m.append(dis)
     
     e_t.append(e/di.item())
     y_tar.append(di.item())
     y_pred.append(yi.item())
     
-    if n > 700:
-        # Grafica de validacion 
-        plt.scatter(n,yi,marker="X",label="predict")
-        plt.scatter(n,di,marker="x",label="target")
-        plt.ylim([0,60])
-        plt.legend()
-        plt.title("Error = {}".format(e))
-        plt.show()
+    # if n >= 2924:
+    #     # Grafica de validacion 
+    #     plt.scatter(n,yi,marker="X",label="predict")
+    #     plt.scatter(n,di,marker="x",label="target")
+    #     plt.legend()
+    #     plt.title("Error = {}, i = {}".format(e/di.item(),n))
+    #     plt.show()
     
-    plt.imshow(A)
-    plt.show()
+    # plt.imshow(A)
+    # plt.colorbar()
+    # plt.show()
+    
+    # plt.imshow(A.T.dot(A))
+    # plt.colorbar()
+    # plt.show()
     
     min_dis = np.argmin(dis) #Index de distancia minima 
-    testDists.append(dis[min_dis])         
+    testDists.append(dis[min_dis])
+    """1. Primer metodo de actualizacion de A """  
+    # if dis[min_dis] <= epsilon:
+    #     a_coef[min_dis] = (a_coef[min_dis] + eta*e)
+    # else: 
+    #     da = [a_coef[j]*rbf(CB[j].reshape(1,-1),ui.reshape(1,-1))*(CB[j].reshape(1,-1) - ui.reshape(1,-1)).T.dot((CB[j].reshape(1,-1) - ui.reshape(1,-1))) for j in range(len(CB))]
+    #     da  = np.sum(da,axis=0)                       
+    #     A = e*A@da
+    #     CB.append(ui)
+    #     a_coef.append(eta*e)
+    
+    """2. Segundo metodo de actualizacion de A """
+    # print("\n*********************************************")
+    # print("\n\t\t n = {}\n".format(n))
+    # print("CB size -> {}".format(len(CB)))  
+    # # print("\ndis -> \n{}".format(dis))
+    # print("\nKernel -> \n{}".format(K[-1]))
+    # print("\nyi -> {}  Vs. di -> {}".format(yi,di))
+    # print("\nerror -> {}".format(e/di.item()))
+    # print("\ndis[min_dis] -> {}  Vs. epsilon -> {}".format(dis[min_dis],epsilon))
+    # print("\n*********************************************")
+    if n == 2780:
+        wer = 1
     if dis[min_dis] <= epsilon:
         a_coef[min_dis] = (a_coef[min_dis] + eta*e)
-    else: 
-        da = [a_coef[j]*rbf(CB[j].reshape(1,-1),ui.reshape(1,-1))*(CB[j] - ui.reshape(1,-1)).T.dot((CB[j] - ui.reshape(1,-1))) for j in range(len(CB))]
-        da  = np.sum(da,axis=0)                       
-        A = e*A@da
+    else:
+        if len(CB) >= K_A:                  
+            #Actualizar A_k y dejar A como el ultimo A_k
+            S = len(CB)
+            for i in range(K_A):
+                da = 0
+                for j in range(S-K_A,S):
+                      da += a_coef[j]*K[j]*(CB[j].reshape(1,-1) - ui.reshape(1,-1)).T.dot((CB[j].reshape(1,-1) - ui.reshape(1,-1)))
+                da = e*A_k[i]@da
+                nda = np.linalg.norm(da,"fro")
+                na = np.linalg.norm(A_k[i],"fro")
+                nda_t.append(nda)
+                na_t.append(na)
+                # print("nda = \n{} \n na = \n{}".format(nda,na))
+                A_k[i] -= mu*(da/nda)*na
+                
+            # print("\nSE ACTUALIZA A")
+            # A_k = [A_k[i] - mu*e*A_k[i]@np.sum([a_coef[j]*rbf(CB[j].reshape(1,-1),ui.reshape(1,-1))*(CB[j].reshape(1,-1) - ui.reshape(1,-1)).T.dot((CB[j].reshape(1,-1) - ui.reshape(1,-1))) for j in range(len(CB))],axis=0) for i in range(K_A)]                     
+        else:
+            A_k.append(A0)
+            
         CB.append(ui)
         a_coef.append(eta*e)
-
-
+         
+        
+        
+        
+        
+        
 # Grafica de validacion 
 plt.plot(y_pred,label="predict")
 plt.plot(y_tar,label="target")
 plt.legend()
 plt.show()
 
+
+# plt.imshow(A)
+# plt.colorbar()
+# plt.show()
+
 print(" CB size = {}".format(len(CB)))
-# while True:
-#     ui = u[i,:].reshape(-1,D) 
-#     yi,disti = self.__output(ui) #Salida  
-#     # yi = np.sum(self.a_coef)
-#     # self.__newEta(yi,err) #Nuevo eta
-#     err = d[i] - yi # Error
-    
-    
-#     #Cuantizacion
-#     min_index = np.argmin(disti)           
-#     if disti[min_index] <= self.epsilon:
-#       self.a_coef[min_index] = (self.a_coef[min_index] + self.eta*err).item()
-#     else: 
-#     #self.A = err*self.A self.a_coef.T.@K *disti*disti
-#         da = [self.a_coef[j]*rbf(self.CB[j].reshape(1,-1),ui)*(self.CB[j] - ui).T.dot((self.CB[j] - ui)) for j in range(len(self.CB))]
-#         da  = np.sum(da,axis=0)                       
-#         self.A = err*self.A@da
-#         self.CB.append(u[i,:])
-#         self.a_coef.append((self.eta*err).item())
-    
-#     self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-    
-#     if self.init_eval: 
-#         y[i-1] = yi
-#     else:
-#         y[i] = yi
-    
-#     if(i == N-1):
-#        if self.init_eval:
-#            self.init_eval = False           
-#            return y
-#     i+=1 
 
-# def __output(self,ui):
-#     from scipy.spatial.distance import cdist
-#     import numpy as np
-#     dist = cdist(self.CB, ui,'mahalanobis', VI=np.dot(self.A.T,self.A))
-#     # dist = [cdist(self.CB[k].reshape(1,-1), ui,'mahalanobis', VI=np.dot(self.A.T,self.A)) for k in range(len(self.CB))]
-#     K = np.exp(-0.5*(dist**2))
-#     y = K.T.dot(np.asarray(self.a_coef))
-#     return [y,dist]
 
-# def predict(self, ui):
-#     from scipy.spatial.distance import cdist
-#     import numpy as np
-#     dist = cdist(self.CB, ui,'mahalanobis', VI=np.dot(self.A.T,self.A))
-#     K = np.exp(-0.5*(dist**2))
-#     y = K.T.dot(np.asarray(self.a_coef))
-#     return y, K
 
+# KC = np.exp(-0.5*cdist(CB,CB,metric='mahalanobis',VI=A.T.dot(A))**2)
+# plt.imshow(KC)
+# plt.colorbar()
+# plt.show()
+
+
+# plt.plot(nda_t)
+# plt.show()
+# plt.plot(na_t)
+# plt.show()

@@ -217,12 +217,81 @@ def KRLS_ALD_PLOT(u,d,sgm,eps):
 
 
     
+def KRLS_ALD_PLOT(u,d,sgm,eps,testName):
+    import search
+    results = search.gridSearchKRLS(u,d,sgm,eps)
+    
+    from sklearn.metrics import r2_score
+    # scr = [r2_score(d,np.array(k).reshape(-1,1)) for k in results]
+    
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set()
+    
+    import matplotlib as mpl
+    import matplotlib.pylab as pl
+    import numpy as np
+    
+    n = len(sgm)
+    colors = pl.cm.jet(np.linspace(0,1,n))
+    fig, ax = plt.subplots()
+    
+    fig = plt.gcf()
+    fig.set_size_inches(18.5, 10.5)
+    
+    norm = mpl.colors.Normalize(min(sgm),max(sgm)) 
+
+    for r in range(len(results)):
+        plt.plot(eps,results[r], color=colors[r])   
+    # plt.plot(scr,'*')
+    cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap='jet'), ax=ax)
+    cbar.set_label('Sigma')
+    plt.title('Prueba ' + testName)
+    plt.ylabel("R2")
+    plt.xlabel("Umbral $\epsilon$")
+    plt.ylim([0,1])
+    plt.savefig("pruebasKRLS/"+ testName +".png", dpi = 300)
+    plt.show()
     
     
     
     
+
+def KRLS_ALD_PLOT_RESULTS(u,d,sgm,eps,testName):
+    import search
+    results = search.gridSearchKRLS(u,d,sgm,eps)
     
+    from sklearn.metrics import r2_score
+    # scr = [r2_score(d,np.array(k).reshape(-1,1)) for k in results]
     
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    sns.set()
+    
+    import matplotlib as mpl
+    import matplotlib.pylab as pl
+    import numpy as np
+    
+    n = len(sgm)
+    colors = pl.cm.jet(np.linspace(0,1,n))
+    fig, ax = plt.subplots()
+    
+    fig = plt.gcf()
+    fig.set_size_inches(18.5, 10.5)
+    
+    norm = mpl.colors.Normalize(min(sgm),max(sgm)) 
+
+    for r in range(len(results)):
+        plt.plot(eps,results[r], color=colors[r])   
+    # plt.plot(scr,'*')
+    cbar = fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap='jet'), ax=ax)
+    cbar.set_label('Sigma')
+    plt.title('Prueba ' + testName)
+    plt.ylabel("R2")
+    plt.xlabel("Umbral $\epsilon$")
+    plt.ylim([0,1])
+    plt.savefig("pruebasKRLS/predicciones/"+ testName + "" +".png", dpi = 300)
+    plt.show()
     
     
     
