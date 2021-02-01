@@ -1577,10 +1577,7 @@ class QKLMS_AMK:
         import numpy as np      
         N,D = u.shape
         Nd,Dd = d.shape
-        
-        from scipy.spatial.distance import cdist
-        rbf = lambda x,y : np.exp(-0.5*cdist(x, y,'mahalanobis', VI=np.dot(self.A.T,self.A))**2)
-        
+               
         #Inicializaciones
         y = []
         if self.initialize:
@@ -1596,6 +1593,7 @@ class QKLMS_AMK:
         
             start = 1
             self.Ak.append(self.A0)
+            self.A = self.A0
             self.initialize = False
             # err = 0.1
             y.append(0)
@@ -1604,11 +1602,12 @@ class QKLMS_AMK:
             
         from tqdm import tqdm
         for i in tqdm(range(start,len(u))):
+        # for i in range(start,len(u)):
             ui = u[i]
             di = d[i]
             yi,dis,K = self.__output(ui.reshape(-1,D) ) #Salida             
             e = (di - yi).item() # Error
-            y.append(yi)# Salida
+            y.append(yi.item())# Salida
             self.et.append(e) #Error total
             #Cuantizacion
             min_dis = np.argmin(dis)         
