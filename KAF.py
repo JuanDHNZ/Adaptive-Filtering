@@ -1601,8 +1601,8 @@ class QKLMS_AMK:
             start = 0
             
         from tqdm import tqdm
-        for i in tqdm(range(start,len(u))):
-        # for i in range(start,len(u)):
+        #for i in tqdm(range(start,len(u))):
+        for i in range(start,len(u)):
             ui = u[i]
             di = d[i]
             yi,dis,K = self.__output(ui.reshape(-1,D) ) #Salida             
