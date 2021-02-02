@@ -108,7 +108,8 @@ def AMK_test(samples=1000,attr=None):
     #             "Best_epsilon":best_ep,
     #             "Best_K":best_K}
     
-    return pd.DataFrame(data=results,index=[attr])
+    # return pd.DataFrame(data=results,index=[attr])
+    return pd.DataFrame(data=results)
     
 
 
