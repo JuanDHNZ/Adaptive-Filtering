@@ -39,9 +39,26 @@ def testSystems(samples = 1000, systemType = None):
         data = pd.read_csv("SN_m_tot_V2.csv", sep=";")
         monthly_mean = data['monthly_mean_total']
         return monthly_mean[-samples:]
-            
+    
+    if systemType == "4.2_AKB":
+        import numpy as np
+        s = np.empty((samples+2,))
+        s[0] = s[1] = 0.1
+        for i in range(2,samples+2):
+            s[i] = s[i-1]*(0.8 - 0.5*np.exp(-s[i-1]**2)) - (0.3 + 0.9*s[i-2]*np.exp(-s[i-1])) + 0.1*np.sin(s[i-1]*np.pi)
+            # var = 0.01
+            # noise = np.sqrt(var)*np.random.randn(samples)
+        return s[2:] #+ noise
+    
+    if systemType == "4.1_AKB":
+        import numpy as np
+        u = np.linspace(-np.pi,np.pi,samples)
+        var = 1e-4
+        noise = np.sqrt(var)*np.random.randn(samples)
+        d = np.cos(8*u) + noise
+        return u.reshape(-1,1),d.reshape(-1,1)
+        
     
 
     
-
 

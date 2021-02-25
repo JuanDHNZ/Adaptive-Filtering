@@ -877,11 +877,7 @@ class QKLMS2:
         if self.initialize:
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
-            self.__CB_cov.append(np.eye(D)) #Covarianzas
-            self.__CB_cov_sums.append(np.zeros((D,)))
-            self.__CB_cov_prods.append(np.zeros((D,D)))
-            self.__n_cov.append(1)
-            self.testCB_means.append(np.zeros(2,))#Prueba
+
             #Salida           
             i = 1
             self.initialize = False
@@ -1001,7 +997,6 @@ class QKLMS:
         #Inicializaciones
         y = []
         if self.initialize:
-
             self.CB.append(u[0,:]) #Codebook
             self.a_coef.append(self.eta*d[0,:]) #Coeficientes
             self.initialize = False
@@ -1011,9 +1006,13 @@ class QKLMS:
                 return
         else:
             start = 0      
-        
+        from sklearn.metrics import mean_squared_error
+        self.mse = []
+        self.mse_ins = []
+        yt = []
         from tqdm import tqdm
-        for i in tqdm(range(start,len(u))):
+        # for i in tqdm(range(start,len(u))):
+        for i in range(start,len(u)):
             ui = u[i]
             di = d[i]           
             yi,disti = self.__output(ui.reshape(-1,D)) #Salida       
@@ -1029,7 +1028,10 @@ class QKLMS:
               self.a_coef.append(self.eta*err) 
               
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-            y.append(yi)       
+            y.append(yi.item())
+            yt.append(di.item())
+            # self.mse.append(mean_squared_error(yt,y[1:]))
+            # self.mse_ins.append(mean_squared_error(di,yi))
         return y
 
     def __output(self,ui):
@@ -1039,6 +1041,20 @@ class QKLMS:
         K = np.exp(-0.5*(dist**2)/(self.sigma**2))
         y = K .T.dot(np.asarray(self.a_coef))
         return [y,dist]
+    
+    def predict(self,u):
+        N,D = u.shape
+        from scipy.spatial.distance import cdist
+        import numpy as np
+        from tqdm import tqdm
+        y = []
+        # for i in tqdm(range(len(u))):
+        for i in range(len(u)):
+            ui = u[i]         
+            dist = cdist(np.asarray(self.CB), ui.reshape(1,-1))
+            K = np.exp(-0.5*(dist**2)/(self.sigma**2))            
+            y.append((K.T.dot(np.asarray(self.a_coef))).item())
+        return np.array(y)
 
     def __newEta(self, y, errp):
         # y: Salida calculada
@@ -1167,7 +1183,9 @@ class QKLMS_AKB:
                 return [0]
         else:
             start = 0
-        from tqdm import tqdm 
+        from tqdm import tqdm
+        from sklearn.metrics import mean_squared_error
+        self.mse = []
         for i in tqdm(range(start,len(u))):
             ui = u[i]
             di = d[i]
@@ -1190,8 +1208,9 @@ class QKLMS_AKB:
                     self.a_coef.append(self.eta*err)
                                         
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
-            print("sigma = {} en iteracion {}".format(self.sigma,i))
+            # print("sigma = {} en iteracion {}".format(self.sigma,i))
             y.append(yi)
+            self.mse.append(mean_squared_error(di,yi))
         return y
 
     def __output(self,ui):
@@ -1599,7 +1618,11 @@ class QKLMS_AMK:
             y.append(0)
         else:
             start = 0
-            
+         
+        from sklearn.metrics import mean_squared_error
+        yt = []
+        self.mse = []
+        self.mse_ins = []
         from tqdm import tqdm
         for i in tqdm(range(start,len(u))):
         # for i in range(start,len(u)):
@@ -1608,6 +1631,9 @@ class QKLMS_AMK:
             yi,dis,K = self.__output(ui.reshape(-1,D) ) #Salida             
             e = (di - yi).item() # Error
             y.append(yi.item())# Salida
+            # yt.append(di.item())# Target
+            # self.mse.append(mean_squared_error(yt, y[1:]))
+            self.mse_ins.append(mean_squared_error(di, yi))
             self.et.append(e) #Error total
             #Cuantizacion
             min_dis = np.argmin(dis)         
@@ -1640,6 +1666,17 @@ class QKLMS_AMK:
         y = K.T.dot(np.asarray(self.a_coef))
         return y,d,K
     
+    def predict(self,u):
+        from scipy.spatial.distance import cdist
+        import numpy as np
+        from tqdm import tqdm
+        y = []
+        for i in tqdm(range(len(u))):
+            ui = u[i]
+            d = cdist(self.CB, ui.reshape(1,-1),'mahalanobis', VI=np.dot(self.A.T,self.A))    
+            K = np.exp(-0.5*(d**2))
+            y.append(K.T.dot(np.asarray(self.a_coef)))
+        return np.array(y)
     
 class QKLMS_M:
     """QKLMS with Adaptive Mahalanobis Kernel"""
