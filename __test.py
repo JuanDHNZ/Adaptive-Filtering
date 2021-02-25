@@ -5,6 +5,7 @@ Created on Thu Feb  4 14:42:00 2021
 @author: Juan David
 """
 
+<<<<<<< HEAD
 def db(samples=5040,system='lorenz',L=40):
     import numpy as np
     import TimeSeriesGenerator as tsg
@@ -403,3 +404,7 @@ for p in tqdm(params):
 import pandas as pd   
 Df = pd.DataFrame(data=results)
 Df.to_csv('QKLMS_4-1.csv')
+=======
+import testSystems as ts
+signal = ts.testSystems(samples = 1000, systemType = "4.2_AKB")
+>>>>>>> 2368572f4cfb5e65163471f47418ba79745581a8
