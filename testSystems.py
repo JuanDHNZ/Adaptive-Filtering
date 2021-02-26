@@ -46,7 +46,6 @@ def testSystems(samples = 1000, systemType = None):
         s[0] = s[1] = 0.1
         for i in range(2,samples+2):
             s[i] = s[i-1]*(0.8 - 0.5*np.exp(-s[i-1]**2)) - (0.3 + 0.9*s[i-2]*np.exp(-s[i-1])) + 0.1*np.sin(s[i-1]*np.pi)
-<<<<<<< HEAD
             # var = 0.01
             # noise = np.sqrt(var)*np.random.randn(samples)
         return s[2:] #+ noise
@@ -59,9 +58,8 @@ def testSystems(samples = 1000, systemType = None):
         d = np.cos(8*u) + noise
         return u.reshape(-1,1),d.reshape(-1,1)
         
-=======
-        return s   
->>>>>>> 2368572f4cfb5e65163471f47418ba79745581a8
+        # return s   
+# >>>>>>> 2368572f4cfb5e65163471f47418ba79745581a8
     
 
     

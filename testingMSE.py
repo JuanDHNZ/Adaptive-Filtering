@@ -62,23 +62,30 @@ eps = 1
  
 from tqdm import tqdm
 
+for rep in range(100):
+
 u,d = db(samples=samples+L-1, system="lorenz",L=L)
   
 noise = np.sqrt(var)*np.random.randn(samples).reshape(-1,1)
-u = u + noise
-d = d + noise
+u_train = u + noise
+d_train = d + noise
 
-u_train, u_test, d_train, d_test = train_test_split(u,d, test_size=1/10, shuffle=False)
+u,d = db(samples=int(samples/2)+L-1, system="lorenz",L=L)
+
+noise = np.sqrt(var)*np.random.randn(samples).reshape(-1,1)
+u_test = u + noise
+d_test = d + noise
+
 
 mse = []
-mse_ = []
-y_ = []
+#mse_ = []
+#y_ = []
 
 f = QKLMS(epsilon=eps, sigma=sgm)
-for ui,di in tqdm(zip(u,d)):
+for ui,di in tqdm(zip(u_train,d_train)):
     f.evaluate(ui,di)
     y_pred = f.predict(u_test) 
-    y_.append(y_pred)
+#    y_.append(y_pred)
     mse.append(np.mean((d_test-np.array(y_pred).reshape(-1,1))**2/d_test**2))
     
 plt.figure(figsize=(15,9))
