@@ -19,15 +19,15 @@ db = args.dataset
 n_samples = args.N
 n_params = args.P
 
-# kaf = "QKLMS_AMK"
-# db = "lorenz"
-# n_samples = 500
+# kaf = "QKLMS_AKB"
+# db = "4.2"
+# n_samples = 2000
 # n_params = 3
 
 def main():
     from test_on_KAF import kafSearch
-    df = kafSearch(kaf, db, n_samples, n_params)
-    df.to_csv('GridSearchResults/' + kaf + '_' + db + '_' + str(n_samples) + '.csv')
+    kafSearch(kaf, db, n_samples, n_params)
+    # df.to_csv('GridSearchResults/' + kaf + '_' + db + '_' + str(n_samples) + '.csv')
     
 if __name__ == "__main__":
     main()

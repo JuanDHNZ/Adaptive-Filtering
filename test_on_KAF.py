@@ -9,6 +9,7 @@ def kafSearch(filterName,systemName,n_samples,n_paramters):
     from tqdm import tqdm
     from sklearn.metrics import r2_score
     from sklearn.metrics import mean_squared_error
+    import pandas as pd  
     
     embedding = 40
     
@@ -57,6 +58,7 @@ def kafSearch(filterName,systemName,n_samples,n_paramters):
                 p['CB_size'] = np.nan
                 p['tradeOff_dist'] = np.nan
             results.append(p)
+            pd.DataFrame(data=results).to_csv('GridSearchResults/' + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')
             
     elif filterName == "QKLMS_AKB": 
         # 2.1. Generate parameters for QKLMS_AKB grid search
@@ -91,8 +93,8 @@ def kafSearch(filterName,systemName,n_samples,n_paramters):
                 f = KAF.QKLMS_AKB(eta=p['eta'],epsilon=p['epsilon'],sigma_init=p['sigma_init'], mu=p['mu'], K=p['K'])
                 y = f.evaluate(u,d)
                 y = np.array(y).reshape(-1,1)       
-                p['r2'] = r2_score(d[1:], y[1:])
-                p['mse'] = mean_squared_error(d[1:], y[1:])
+                p['r2'] = r2_score(d[1:], y)
+                p['mse'] = mean_squared_error(d[1:], y)
                 p['CB_size'] = len(f.CB)
                 p['tradeOff_dist'] = tradeOffDistance(p['mse'],p['CB_size'])
             except:
@@ -101,11 +103,22 @@ def kafSearch(filterName,systemName,n_samples,n_paramters):
                 p['CB_size'] = np.nan
                 p['tradeOff_dist'] = np.nan
             results.append(p)
+            pd.DataFrame(data=results).to_csv('GridSearchResults/' + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')
             
     elif filterName == "QKLMS_AMK": 
         # 2.1. Generate parameters for QKLMS_AKB grid search
         import numpy as np
         if systemName == "lorenz":
+            eta = np.linspace(0.02,1,n_paramters)
+            epsilon = np.linspace(1e-3,100,n_paramters)
+            mu = np.linspace(1e-4,1,n_paramters)
+            K = np.linspace(2,20,n_paramters)     
+        elif systemName == "chua":
+            eta = np.linspace(0.02,1,n_paramters)
+            epsilon = np.linspace(1e-3,100,n_paramters)
+            mu = np.linspace(1e-4,1,n_paramters)
+            K = np.linspace(2,20,n_paramters)
+        elif systemName == "4.2":
             eta = np.linspace(0.02,1,n_paramters)
             epsilon = np.linspace(1e-3,100,n_paramters)
             mu = np.linspace(1e-4,1,n_paramters)
@@ -131,11 +144,12 @@ def kafSearch(filterName,systemName,n_samples,n_paramters):
                 p['CB_size'] = np.nan
                 p['tradeOff_dist'] = np.nan
             results.append(p)
-    else:
-        raise ValueError("Filter does not exist")
+            pd.DataFrame(data=results).to_csv('GridSearchResults/' + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')
             
-    import pandas as pd  
-    return pd.DataFrame(data=results)
+    else:
+        raise ValueError("Filter does not exist")   
+    return       
+    
 
 def db(samples=1000,system='lorenz',L=40):
     import numpy as np

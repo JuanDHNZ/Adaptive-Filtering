@@ -1186,7 +1186,8 @@ class QKLMS_AKB:
         from tqdm import tqdm
         from sklearn.metrics import mean_squared_error
         self.mse = []
-        for i in tqdm(range(start,len(u))):
+        # for i in tqdm(range(start,len(u))):
+        for i in range(start,len(u)):
             ui = u[i]
             di = d[i]
             
