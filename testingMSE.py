@@ -37,177 +37,259 @@ def db3(samples=1000):
     import testSystems as ts
     return ts.testSystems(samples=samples, systemType="4.1_AKB")
 
+def MC_testingMSE_QKLMS(dataset,eta,epsilon,sigma, trainSetSize,testSetSize, MonteCarlo_N):
+    Mc_MSE = []
+    samples = trainSetSize*2
+    
+    from tqdm import tqdm
+    from KAF import QKLMS
+    import numpy as np
+    
+    for rep in tqdm(range(MonteCarlo_N)):
+        #train set
+        if dataset == "lorenz" or dataset == "chua":
+            var = 0.1
+            u,d = db(samples=samples, system=dataset) 
+            noise = np.sqrt(var)*np.random.randn(trainSetSize).reshape(-1,1)
+            u_train = u[:trainSetSize] + noise
+            d_train = d[:trainSetSize] + noise
+            
+            # test set
+            u,d = db(samples=samples, system=dataset)
+            noise = np.sqrt(var)*np.random.randn(testSetSize).reshape(-1,1)
+            u_test = u[:testSetSize] + noise
+            d_test = d[:testSetSize] + noise
+        
+        elif dataset == "4.2":
+            u,d = db2(samples=samples) 
+            u_train = u[:trainSetSize]
+            d_train = d[:trainSetSize]
+                
+            # test set
+            u,d = db2(samples=samples)
+            u_test = u[:testSetSize]
+            d_test = d[:testSetSize]
+        
+        i=0
+        mse = []      
+        f = QKLMS(eta,epsilon,sigma)
+        
+        for ui,di in tqdm(zip(u_train,d_train)):
+            f.evaluate(ui,di)
+            
+            #Option 1
+            # y_pred = f.predict(u_test) 
+            # mse.append(np.mean((d_test-np.array(y_pred).reshape(-1,1))**2/d_test**2))  
+            
+            #Option 2
+            if np.mod(i,5)==0:
+                y_pred = f.predict(u_test) 
+                mse.append(np.sum((d_test-np.array(y_pred).reshape(-1,1))**2)/np.sum(d_test**2))
+            i+=1
+        Mc_MSE.append(mse)
+    return np.mean(np.array(Mc_MSE),axis=0).reshape(-1,1)
+
+def MC_testingMSE_QKLMS_AKB(dataset,eta,epsilon,sigma,mu,K, trainSetSize,testSetSize, MonteCarlo_N):
+    Mc_MSE = []
+    samples = trainSetSize*2
+    
+    from tqdm import tqdm
+    from KAF import QKLMS_AKB
+    import numpy as np
+    
+    for rep in tqdm(range(MonteCarlo_N)):
+        #train set
+        if dataset == 'lorenz' or dataset == "chua":
+            var = 0.1
+            u,d = db(samples=samples, system=dataset) 
+            noise = np.sqrt(var)*np.random.randn(trainSetSize).reshape(-1,1)
+            u_train = u[:trainSetSize] + noise
+            d_train = d[:trainSetSize] + noise
+            
+            # test set
+            u,d = db(samples=samples, system=dataset)
+            noise = np.sqrt(var)*np.random.randn(testSetSize).reshape(-1,1)
+            u_test = u[:testSetSize] + noise
+            d_test = d[:testSetSize] + noise
+        
+        elif dataset == "4.2":
+            u,d = db2(samples=samples) 
+            u_train = u[:trainSetSize]
+            d_train = d[:trainSetSize]
+                
+            # test set
+            u,d = db2(samples=samples)
+            u_test = u[:testSetSize]
+            d_test = d[:testSetSize]
+            
+        mse = []
+        i = 0
+        f = QKLMS_AKB(eta,epsilon,sigma,mu,K)
+        
+        for ui,di in tqdm(zip(u_train,d_train)):
+            f.evaluate(ui,di)
+            # Option 1
+            # y_pred = f.predict(u_test) 
+            # mse.append(np.mean((d_test-np.array(y_pred).reshape(-1,1))**2/d_test**2))
+            
+            #Option 2
+            if np.mod(i,5)==0:
+                y_pred = f.predict(u_test) 
+                mse.append(np.sum((d_test-np.array(y_pred).reshape(-1,1))**2)/np.sum(d_test**2))
+            i+=1
+        Mc_MSE.append(mse)
+    return np.mean(np.array(Mc_MSE),axis=0).reshape(-1,1)
+
+def MC_testingMSE_QKLMS_AMK(dataset,eta,epsilon,mu,K,trainSetSize,testSetSize, MonteCarlo_N):
+    Mc_MSE = []
+    samples = trainSetSize*2
+    
+    from tqdm import tqdm
+    from KAF import QKLMS_AMK
+    import numpy as np
+    for rep in tqdm(range(MonteCarlo_N)):
+        #train set
+        if dataset == 'lorenz' or dataset == "chua":
+            var = 0.1
+            u,d = db(samples=samples, system=dataset) 
+            noise = np.sqrt(var)*np.random.randn(trainSetSize).reshape(-1,1)
+            u_train = u[:trainSetSize] + noise
+            d_train = d[:trainSetSize] + noise
+            
+            # test set
+            u,d = db(samples=samples, system=dataset)
+            noise = np.sqrt(var)*np.random.randn(testSetSize).reshape(-1,1)
+            u_test = u[:testSetSize] + noise
+            d_test = d[:testSetSize] + noise
+        
+        elif dataset == "4.2":
+            u,d = db2(samples=samples) 
+            u_train = u[:trainSetSize]
+            d_train = d[:trainSetSize]
+                
+            # test set
+            u,d = db2(samples=samples)
+            u_test = u[:testSetSize]
+            d_test = d[:testSetSize]
+            
+        mse = []
+        i=0 # for option 2
+        f = QKLMS_AMK(eta,epsilon,mu=mu,Ka=K,A_init="pca")
+        f.evaluate(u[:100],d[:100])
+        for ui,di in tqdm(zip(u_train,d_train)):
+            try:
+                f.evaluate(ui,di)
+                
+                # Option 1
+                # y_pred = f.predict(u_test) 
+                # mse.append(np.mean((d_test-np.array(y_pred).reshape(-1,1))**2/d_test**2))
+                
+                # Option 2
+                if np.mod(i,5)==0:
+                    y_pred = f.predict(u_test) 
+                    mse.append(np.sum((d_test-np.array(y_pred).reshape(-1,1))**2)/np.sum(d_test**2))
+            except:
+                mse.append(0)
+            i+=1
+        Mc_MSE.append(mse)
+        return np.mean(np.array(Mc_MSE),axis=0).reshape(-1,1)
 
 
-from KAF import QKLMS_AKB
-from KAF import QKLMS_AMK
-from KAF import QKLMS
-import matplotlib.pyplot as plt
+"""
+    TESTING MSE ON LORENZ SYSTEM USING QKLMS, QKLMS-AKB AND QKLMS-AMK
+     
+    Parameters were determined by grid search
+     
+    QKLMS:
+         eta = 0.9
+         epsilon = 50 
+         sigma = 200
+         
+    Results:
+        R2 score = 0.984
+        MSE = 0.88        
+        
+"""
+#Simulation parameters
+trainSetSize = 2000
+testSetSize = 200
+N = 50
+# dataset = "lorenz"
+dataset = "chua"
+# dataset = "4.2"
+
+# 1. QKLMS
+"""a. Lorenz"""
+# eta = 0.9
+# epsilon = 50 
+# sigma = 200
+
+"""b. chua"""
+# eta = 0.9
+# epsilon = 50 
+# sigma = 200
+
+"""c. 4.2"""
+eta = 0.9
+epsilon = 0.01
+sigma = 500
+
+QKLMS_MSE = MC_testingMSE_QKLMS(dataset,eta,epsilon,sigma, trainSetSize,testSetSize,N)
+
+# 2. QKLMS_AKB
+"""a. Lorenz"""
+# eta = 1
+# epsilon = 100
+# sigma = 200
+# mu = 1
+# K = 2
+
+"""b. chua"""
+eta = 0.9
+epsilon = 100
+sigma = 50.0075
+mu = 1
+K = 20
+
+"""c. 4.2"""
+# eta = 0.1
+# epsilon = 25.00075
+# sigma = 200
+# mu = 1e-4
+# K = 2
+
+AKB_MSE = MC_testingMSE_QKLMS_AKB(dataset,eta,epsilon,sigma,mu,K,trainSetSize,testSetSize,N)
+
+# 3. QKLMS_AMK
+"""a. Lorenz"""
+# eta = 1
+# epsilon = 20.0008
+# mu = 1e-4
+# K = 2
+
+"""b. chua"""
+eta = 0.804
+epsilon = 1e-3
+mu = 1e-4
+K = 12
+
+"""c. 4.2"""
+# eta = 0.02
+# epsilon = 20.0008
+# mu = 1e-4
+# K = 2
+
+AMK_MSE = MC_testingMSE_QKLMS_AMK(dataset,eta,epsilon,mu,K,trainSetSize,testSetSize,N)
+
+
+import pandas as pd
 import numpy as np
-import seaborn as sns
-from sklearn.model_selection import train_test_split
-sns.set()
-
-samples = 2200
-L = 40 
-N = 1 
-
-# 1. Lorenz
-var = 0.1
-
-#QKLMS for lorenz
-sgm = 50
-eps = 1
-
- 
-from tqdm import tqdm
-
-for rep in range(100):
-
-u,d = db(samples=samples+L-1, system="lorenz",L=L)
-  
-noise = np.sqrt(var)*np.random.randn(samples).reshape(-1,1)
-u_train = u + noise
-d_train = d + noise
-
-u,d = db(samples=int(samples/2)+L-1, system="lorenz",L=L)
-
-noise = np.sqrt(var)*np.random.randn(samples).reshape(-1,1)
-u_test = u + noise
-d_test = d + noise
+data = np.concatenate((QKLMS_MSE,AKB_MSE,AMK_MSE),axis=1)
+columns = ['QKLMS','QKLMS_AKB','QKLMS_AMK']
+results = pd.DataFrame(data=data, columns=columns)
+results.to_csv("MSE2_comparison_with_" + dataset + ".csv")
 
 
-mse = []
-#mse_ = []
-#y_ = []
-
-f = QKLMS(epsilon=eps, sigma=sgm)
-for ui,di in tqdm(zip(u_train,d_train)):
-    f.evaluate(ui,di)
-    y_pred = f.predict(u_test) 
-#    y_.append(y_pred)
-    mse.append(np.mean((d_test-np.array(y_pred).reshape(-1,1))**2/d_test**2))
-    
-plt.figure(figsize=(15,9))
-plt.title("MSE RELATIVO - Lorenz - $\sigma$ = {} ; epsilon = {} ".format(sgm,eps))
-plt.yscale("log")
-# plt.ylim( (10**-4,10**0))
-plt.plot(mse,"r-",linewidth=1)
-plt.ylabel("MSE")
-plt.xlabel("iterations")
-plt.savefig("Montecarlo1000/"+ "ER_lorenz" +".png", dpi = 300)
-plt.show()
-
-# plt.title("Prediccion")
-# plt.plot(d_test)
-# plt.plot(y_pred)
-# plt.show()
-
-# 2. Sistema 4.1 
-sgm = 0.24
-eps = 1e-6
-
-u,d = db3(samples=samples)
-
-u_train, u_test, d_train, d_test = train_test_split(u,d, test_size=1/10, shuffle=False)
-
-f = QKLMS(epsilon=eps, sigma=sgm)
-
-mse = []
-
-for ui,di in tqdm(zip(u,d)):
-    f.evaluate(ui,di)
-    y_pred = f.predict(u_test)
-    mse.append(np.mean((d_test-np.array(y_pred).reshape(-1,1))**2/d_test**2))
-    
-
-plt.figure(figsize=(15,9))
-plt.title("MSE RELATIVO - 4.2 - $\sigma$ = {} ; epsilon = {} ".format(sgm,eps))
-plt.yscale("log")
-# plt.ylim( (10**-4,10**3) )
-plt.plot(mse,"r-",linewidth=1)
-plt.ylabel("MSE")
-plt.xlabel("iterations")
-plt.savefig("Montecarlo1000/"+ "ER_4-2" +".png", dpi = 300)
-plt.show()
-
-# plt.title("Prediccion")
-# plt.plot(d_test)
-# plt.plot(y_pred)
-# plt.show()
 
 
-# 3.Sistema 4.2
-sgm = 0.666
-eps = 1e-6
 
-u,d = db2(samples=samples)
-
-u_train, u_test, d_train, d_test = train_test_split(u,d, test_size=1/10, shuffle=False)
-
-f = QKLMS(epsilon=eps, sigma=sgm)
-
-mse = []
-
-for ui,di in tqdm(zip(u,d)):
-    f.evaluate(ui,di)
-    y_pred = f.predict(u_test)
-    mse.append(np.mean((d_test-np.array(y_pred).reshape(-1,1))**2/d_test**2))
-    
-plt.figure(figsize=(15,9))
-plt.title("MSE RELATIVO - 4.1 - $\sigma$ = {} ; epsilon = {} ".format(sgm,eps))
-plt.yscale("log")
-# plt.ylim( (10**-4,10**3))
-plt.plot(mse,"r-",linewidth=1)
-plt.ylabel("MSE")
-plt.xlabel("iterations")
-plt.savefig("Montecarlo1000/"+ "ER_4-1" +".png", dpi = 300)
-plt.show()
-
-# plt.title("Prediccion")
-# plt.plot(d_test)
-# plt.plot(y_pred)
-# plt.show()
-
-
-# 1. Chua
-var = 0.1
-
-u,d = db(samples=samples+L-1, system="lorenz",L=L)
-noise = np.sqrt(var)*np.random.randn(samples).reshape(-1,1)
-
-u_train = u + noise
-d_train = d + noise
-
-noise = np.sqrt(var)*np.random.randn(samples).reshape(-1,1)
-
-u_test = u + noise
-d_test = d + noise
- 
-#QKLMS for lorenz
-sgm = 50
-eps = 1
-
- 
-from tqdm import tqdm
-
-mse = []
-mse_ = []
-y_ = []
-
-f = QKLMS(epsilon=eps, sigma=sgm)
-for ui,di in tqdm(zip(u,d)):
-    f.evaluate(ui,di)
-    y_pred = f.predict(u_test) 
-    y_.append(y_pred)
-    mse.append(np.mean((d_test-np.array(y_pred).reshape(-1,1))**2/d_test**2))
-    
-plt.figure(figsize=(15,9))
-plt.title("MSE RELATIVO - Chua - $\sigma$ = {} ; epsilon = {} ".format(sgm,eps))
-plt.yscale("log")
-# plt.ylim( (10**-4,10**0))
-plt.plot(mse,"r-",linewidth=1)
-plt.ylabel("MSE")
-plt.xlabel("iterations")
-plt.savefig("Montecarlo1000/"+ "ER_Chua" +".png", dpi = 300)
-plt.show()

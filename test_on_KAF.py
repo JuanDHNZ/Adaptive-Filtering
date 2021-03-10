@@ -93,8 +93,8 @@ def kafSearch(filterName,systemName,n_samples,n_paramters):
                 f = KAF.QKLMS_AKB(eta=p['eta'],epsilon=p['epsilon'],sigma_init=p['sigma_init'], mu=p['mu'], K=p['K'])
                 y = f.evaluate(u,d)
                 y = np.array(y).reshape(-1,1)       
-                p['r2'] = r2_score(d[1:], y)
-                p['mse'] = mean_squared_error(d[1:], y)
+                p['r2'] = r2_score(d[1:], y[1:])
+                p['mse'] = mean_squared_error(d[1:], y[1:])
                 p['CB_size'] = len(f.CB)
                 p['tradeOff_dist'] = tradeOffDistance(p['mse'],p['CB_size'])
             except:

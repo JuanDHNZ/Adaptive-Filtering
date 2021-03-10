@@ -38,12 +38,12 @@ import numpy as np
 
 import padasip as pa 
 # u,d = db(samples=5000,system='chua',L=2)
-# u,d = db2(samples=500)
-u,d = db3(samples=5000)
+u,d = db2(samples=2000)
+# u,d = db3(samples=5000)
 
 
 # identification
-f = pa.filters.FilterLMS(n=1, mu=0.01, w="random")
+f = pa.filters.FilterLMS(n=2, mu=0.01, w="random")
 y, e, w = f.run(d,u)
 
 # show results

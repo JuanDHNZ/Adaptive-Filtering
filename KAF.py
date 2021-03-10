@@ -1046,7 +1046,6 @@ class QKLMS:
         N,D = u.shape
         from scipy.spatial.distance import cdist
         import numpy as np
-        from tqdm import tqdm
         y = []
         # for i in tqdm(range(len(u))):
         for i in range(len(u)):
@@ -1177,6 +1176,7 @@ class QKLMS_AKB:
             self.CB.append(u[0]) #Codebook
             self.a_coef.append(self.eta*d[0]) #Coeficientes          
             start = 1
+            y.append(0)
             self.initialize = False
 
             if u.shape[0] == 1:
@@ -1222,6 +1222,17 @@ class QKLMS_AKB:
         y = K.T.dot(np.asarray(self.a_coef))
         return [y,dist]
     
+    def predict(self,u):
+        from scipy.spatial.distance import cdist
+        import numpy as np
+        y = []
+        for i in range(len(u)):
+            ui = u[i]
+            dist = cdist(np.asarray(self.CB), ui.reshape(1,-1))
+            K = np.exp(-0.5*(dist**2)/(self.sigma**2))
+            y.append(K.T.dot(np.asarray(self.a_coef)))
+        return np.array(y)
+        
     def __gu(self,error,i,ui):
         sigma = self.sigma_n[i]
         from scipy.spatial.distance import cdist
@@ -1594,7 +1605,14 @@ class QKLMS_AMK:
         self.A_init = A_init
         
     def evaluate(self, u , d):
-        import numpy as np      
+        import numpy as np
+        if len(u.shape) == 2:
+            if u.shape[0]!=d.shape[0]:
+                raise ValueError('All of the input arguments must be of the same lenght')
+        else:
+            if len(u.shape) == 1:
+                u = u.reshape(1,-1)
+                d = d.reshape(1,-1)
         N,D = u.shape
         Nd,Dd = d.shape
                
@@ -1608,7 +1626,7 @@ class QKLMS_AMK:
                 self.A0 = np.eye(D)/self.sigma #Matriz de proyeccion
             elif self.A_init == "pca":
                 from sklearn.decomposition import PCA
-                pca = PCA(n_components=5).fit(u[:100,:])
+                pca = PCA(n_components=2).fit(u[:100,:])
                 self.A0 = pca.components_/100               
         
             start = 1
@@ -1670,9 +1688,8 @@ class QKLMS_AMK:
     def predict(self,u):
         from scipy.spatial.distance import cdist
         import numpy as np
-        from tqdm import tqdm
         y = []
-        for i in tqdm(range(len(u))):
+        for i in range(len(u)):
             ui = u[i]
             d = cdist(self.CB, ui.reshape(1,-1),'mahalanobis', VI=np.dot(self.A.T,self.A))    
             K = np.exp(-0.5*(d**2))
