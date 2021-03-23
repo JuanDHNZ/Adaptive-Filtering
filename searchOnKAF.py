@@ -11,23 +11,25 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--kaf', help='Filter to train')
 parser.add_argument('--dataset', help='Dataset to use')
 parser.add_argument('-N', help='Dataset length (if available)',default=1000,type=int)
-parser.add_argument('-P', help='Grid size',default=4,type=int)
+parser.add_argument('-trainSplit', help='Train lenght percentage',default=1000,type=float)
+parser.add_argument('-N_mc', help='Number of Monte Carlo simulations to run',default=10,type=int)
+
 
 args = parser.parse_args()
 kaf = args.kaf
 db = args.dataset
 n_samples = args.N
-n_params = args.P
-
-# kaf = "QKLMS_AKB"
-# db = "4.2"
-# n_samples = 2000
-# n_params = 3
+trainSplit = args.trainSplit
+N_mc = args.N_mc
 
 def main():
-    from test_on_KAF import kafSearch
-    kafSearch(kaf, db, n_samples, n_params)
+    from test_on_KAF import kafSearch_MC
+    kafSearch_MC(kaf, db, n_samples,trainSplit, N_mc)
     # df.to_csv('GridSearchResults/' + kaf + '_' + db + '_' + str(n_samples) + '.csv')
     
 if __name__ == "__main__":
     main()
+
+
+# from test_on_KAF import kafSearch_MC
+# kafSearch_MC("QKLMS_AMK", "lorenz", 100, 0.8,5)

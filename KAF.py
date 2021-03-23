@@ -1230,7 +1230,7 @@ class QKLMS_AKB:
             ui = u[i]
             dist = cdist(np.asarray(self.CB), ui.reshape(1,-1))
             K = np.exp(-0.5*(dist**2)/(self.sigma**2))
-            y.append(K.T.dot(np.asarray(self.a_coef)))
+            y.append((K.T.dot(np.asarray(self.a_coef))).item())
         return np.array(y)
         
     def __gu(self,error,i,ui):
@@ -1627,7 +1627,7 @@ class QKLMS_AMK:
             elif self.A_init == "pca":
                 from sklearn.decomposition import PCA
                 pca = PCA(n_components=2).fit(u[:100,:])
-                self.A0 = pca.components_/100               
+                self.A0 = pca.components_            
         
             start = 1
             self.Ak.append(self.A0)
@@ -1652,8 +1652,8 @@ class QKLMS_AMK:
             y.append(yi.item())# Salida
             # yt.append(di.item())# Target
             # self.mse.append(mean_squared_error(yt, y[1:]))
-            self.mse_ins.append(mean_squared_error(di, yi))
-            self.et.append(e) #Error total
+            # self.mse_ins.append(mean_squared_error(di, yi))
+            # self.et.append(e) #Error total
             #Cuantizacion
             min_dis = np.argmin(dis)         
             if dis[min_dis] <= self.epsilon:
@@ -1670,7 +1670,7 @@ class QKLMS_AMK:
                         na = np.linalg.norm(self.Ak[i],"fro")
                         self.Ak[i] -= self.mu*(da/nda)*na                                                          
                 else:
-                    self.Ak.append(self.A0)
+                    self.Ak.append(self.A0.copy())
             
                 self.CB.append(ui)
                 self.a_coef.append(self.eta*e)                 
@@ -1693,7 +1693,7 @@ class QKLMS_AMK:
             ui = u[i]
             d = cdist(self.CB, ui.reshape(1,-1),'mahalanobis', VI=np.dot(self.A.T,self.A))    
             K = np.exp(-0.5*(d**2))
-            y.append(K.T.dot(np.asarray(self.a_coef)))
+            y.append((K.T.dot(np.asarray(self.a_coef))).item())
         return np.array(y)
     
 class QKLMS_M:
