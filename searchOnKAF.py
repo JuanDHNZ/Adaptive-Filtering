@@ -6,13 +6,19 @@ Created on Mon Mar  1 11:01:38 2021
 """
 
 
+import numpy as np
 import argparse
+
+np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--kaf', help='Filter to train')
 parser.add_argument('--dataset', help='Dataset to use')
 parser.add_argument('-N', help='Dataset length (if available)',default=1000,type=int)
 parser.add_argument('-trainSplit', help='Train lenght percentage',default=1000,type=float)
 parser.add_argument('-N_mc', help='Number of Monte Carlo simulations to run',default=10,type=int)
+
+
 
 
 args = parser.parse_args()
