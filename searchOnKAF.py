@@ -38,4 +38,4 @@ if __name__ == "__main__":
 
 
 # from test_on_KAF import kafSearch_MC
-# kafSearch_MC("QKLMS_AMK", "lorenz", 100, 0.8,5)
+# kafSearch_MC("QKLMS", "4.1", 100, 0.8,5)

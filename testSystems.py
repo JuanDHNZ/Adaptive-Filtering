@@ -56,7 +56,7 @@ def testSystems(samples = 1000, systemType = None):
         var = 1e-4
         noise = np.sqrt(var)*np.random.randn(samples)
         d = np.cos(8*u) + noise
-        return u.reshape(-1,1),d.reshape(-1,1)
+        return u,d
         
         # return s   
 # >>>>>>> 2368572f4cfb5e65163471f47418ba79745581a8

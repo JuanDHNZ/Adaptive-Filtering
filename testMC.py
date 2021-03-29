@@ -24,24 +24,35 @@ embedding = 5
 
 # import testSystems as ts
 # x = ts.testSystems(samples = 200000, systemType = "4.2_AKB")
-# embedding = 5
+# embedding = 2
+
+from test_on_KAF import selectBestResultFromKafSearch
+
+folder = 'GridSearchEx'
+""" lorenz """
+# QKLMS_lorenz = 'QKLMS_lorenz_5000.csv'
+# params = selectBestResultFromKafSearch(folder + '/' + QKLMS_lorenz)
+
+# AKB_lorenz = 'QKLMS_AKB_lorenz_5000.csv'
+# params = selectBestResultFromKafSearch(folder + '/' + AKB_lorenz)
+
+AMK_lorenz = 'QKLMS_AMK_lorenz_5000.csv'
+params = selectBestResultFromKafSearch(folder + '/' + AMK_lorenz)
+
+# """ 4.2 """
+# QKLMS_42 = 'QKLMS_4.2_5000.csv'
+# params = selectBestResultFromKafSearch(folder + '/' + QKLMS_42)
+
+# AKB_42 = 'QKLMS_AKB_4.2_5000.csv'
+# params = selectBestResultFromKafSearch(folder + '/' + AKB_42)
+
+# AMK_42 = 'QKLMS_AMK_4.2_5000.csv'
+# params = selectBestResultFromKafSearch(folder + '/' + AMK_42)
+
 
 fType='QKLMS_AMK'
 inputSizeXrun = 5000
 trainSplit = 0.8
-
-
-from test_on_KAF import selectBestResultFromKafSearch
-
-folder = 'GridSearchResults3rdRun'
-# QKLMS_lorenz = 'QKLMS_lorenz_5000.csv'
-# AKB_lorenz = 'QKLMS_AKB_lorenz_5000.csv'
-AMK_lorenz = 'QKLMS_AMK_lorenz_5000.csv'
-# AMK_42 = 'QKLMS_AMK_4.2_5000.csv'
-
-# params = selectBestResultFromKafSearch(folder + '/' + QKLMS_lorenz)
-# params = selectBestResultFromKafSearch(folder + '/' + AKB_lorenz)
-params = selectBestResultFromKafSearch(folder + '/' + AMK_lorenz)
 
 MSE = MC_BestParameters(inputSignal=x, 
               monteCarloRuns=10, 
@@ -49,7 +60,10 @@ MSE = MC_BestParameters(inputSignal=x,
               trainSplitPercentage=trainSplit,
               signalEmbedding=embedding,
               filterType=fType,
-              parameters=params)
+              parameters=params,
+              lorenzTest=True,
+              y=y,
+              z=z)
 
 import pandas as pd
 df = pd.DataFrame(MSE, columns=['MSE'])
