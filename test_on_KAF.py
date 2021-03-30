@@ -363,7 +363,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
             try:
                 u_train, u_test, d_train, d_test = trainAndTestSplitWithEmbedding(inputSignal, targetSignal,signalEmbedding, run, singleRunDataSize, trainLength)
             except:
-                u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, run, singleRunDataSize, trainLength)
+                # u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, run, singleRunDataSize, trainLength)
                 u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, run, singleRunDataSize, trainLength)
                 
             for p in tqdm(params):
