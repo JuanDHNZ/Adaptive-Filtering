@@ -295,15 +295,17 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
     n_train = int(n_samples*trainSplit)
     n_test = n_samples - n_train
     
-    folder = 'GridSearch4.1'
+    folder = 'GridSearchWang/'
     
-    if systemName == "lorenz" or systemName == "chua":
+    attractors = ['lorenz','wang', 'rossler', 'rikitake']
+    
+    if systemName in attractors:
         signalEmbedding = 5
         import TimeSeriesGenerator
-        inputSignal, y, z = TimeSeriesGenerator.chaoticSystem(samples=(n_samples+signalEmbedding)*MC_runs,systemType='lorenz')
+        inputSignal, y, z = TimeSeriesGenerator.chaoticSystem(samples=(n_samples+signalEmbedding)*MC_runs,systemType=systemName)
         inputSignal -= inputSignal.mean()
         inputSignal /= inputSignal.std()
-        
+               
     elif systemName == "4.1":
         signalEmbedding = 5
         import testSystems as ts
@@ -324,11 +326,10 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
     # 2. Pick filter    
     if filterName == "QKLMS":
         # 2.1. Generate parameters for QKLMS grid search
-        import numpy as np
-        if systemName == "lorenz":
-            eta = [0.05, 0.1, 0.3]
-            sigma = [1e-1, 2, 4]
-            epsilon = [1e-1, 1, 2]
+        if systemName in attractors:
+            eta = [0.05, 0.1, 0.3, 0.5, 0.9]
+            sigma = [1e-2, 1e-1, 1, 2, 4, 8]
+            epsilon = [1e-1, 0.5, 1, 2]
             
         elif systemName == "chua":
             eta = [0.05, 0.1, 0.5, 0.9]
@@ -363,7 +364,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
             try:
                 u_train, u_test, d_train, d_test = trainAndTestSplitWithEmbedding(inputSignal, targetSignal,signalEmbedding, run, singleRunDataSize, trainLength)
             except:
-                # u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, run, singleRunDataSize, trainLength)
+                u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, run, singleRunDataSize, trainLength)
                 u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, run, singleRunDataSize, trainLength)
                 
             for p in tqdm(params):
@@ -402,10 +403,10 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
     elif filterName == "QKLMS_AKB": 
         # 2.1. Generate parameters for QKLMS_AKB grid search
         import numpy as np
-        if systemName == "lorenz":
-            eta = [0.1, 0.5]
-            sigma = [1,2]
-            epsilon = [1e-1, 1]
+        if systemName in attractors:
+            eta = [0.05, 0.1, 0.3, 0.9]
+            sigma = [ 1e-1, 1, 2]
+            epsilon = [1e-1, 0.5, 1, 2]
             mu = [1e-3, 1e-1, 0.1, 1]
             K = [2,5,10,20]
 
@@ -487,10 +488,10 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
     elif filterName == "QKLMS_AMK": 
         # 2.1. Generate parameters for QKLMS_AKB grid search
         import numpy as np
-        if systemName == "lorenz":
-            mu = [0.1,1,1.5]
-            eta = [0.05, 0.1]
-            epsilon = [1e-1, 1]
+        if systemName in attractors:
+            mu = [0.1, 0.5,1,1.5]
+            eta = [0.05, 0.1, 0.3, 0.5, 0.9]
+            epsilon = [1e-1, 0.5, 1, 2]
             K = [5,10,15,20]
             
         elif systemName == "chua":
@@ -562,7 +563,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
         results_df['CB_size'] = results_df['CB_size'].astype(int)
         results_df['tradeOff_dist'] = tradeOff_distance
         
-        results_df.to_csv(folder + '/' + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')   
+        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')   
     else:
         raise ValueError("Filter does not exist")   
     return       
