@@ -5,7 +5,6 @@ Created on Mon Mar 15 16:48:17 2021
 @author: Juan David
 """
 
-
 import pandas as pd
 folder = 'GridSearchResults3rdRun'
 QKLMS = pd.read_csv(folder + '/testingMSE_QKLMS_4000-1000_42.csv')['MSE']

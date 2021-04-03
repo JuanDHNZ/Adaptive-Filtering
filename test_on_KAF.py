@@ -4,7 +4,7 @@ Created on Fri Feb 26 15:42:19 2021
 
 @author: Juan David
 """
-def MC_BestParameters(inputSignal, monteCarloRuns, singleRunDataSize, trainSplitPercentage, signalEmbedding, filterType, parameters,lorenzTest=False,y=None,z=None):
+def MC_BestParameters(inputSignal, monteCarloRuns, singleRunDataSize, trainSplitPercentage, signalEmbedding, filterType, parameters,ExTest=False,y=None,z=None):
     '''MonteCarlo for QKLMS'''
     import matplotlib.pyplot as plt
     from tqdm import tqdm
@@ -32,8 +32,12 @@ def MC_BestParameters(inputSignal, monteCarloRuns, singleRunDataSize, trainSplit
         u_test = np.array([inputSignal[i-signalEmbedding:i] for i in range(signalEmbedding+r*singleRunDataSize+trainLength,signalEmbedding+(r+1)*singleRunDataSize)])
         d_test = np.array([inputSignal[i] for i in range(signalEmbedding+r*singleRunDataSize+trainLength,signalEmbedding+(r+1)*singleRunDataSize)]).reshape(-1,1)
         
-        if lorenzTest:
+        if ExTest:
             u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, 0, singleRunDataSize, trainLength)
+        else:
+            u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, 0, singleRunDataSize, trainLength)
+            
+            
         if filterType == 'QKLMS':
             kafFilter = KAF.QKLMS(sigma=parameters['sigma'],epsilon=parameters['epsilon'],eta=parameters['eta'])
         elif filterType == 'QKLMS_AKB':

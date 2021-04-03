@@ -16,55 +16,38 @@ import numpy as np
 
 # LORENZ ATTRACTOR
 
-import TimeSeriesGenerator
-x, y, z = TimeSeriesGenerator.chaoticSystem(samples=60000,systemType='lorenz')
-embedding = 5
+# import TimeSeriesGenerator
+# x, y, z = TimeSeriesGenerator.chaoticSystem(samples=60000,systemType='lorenz')
+# embedding = 5
 
 # SISTEMA 4.2
 
-# import testSystems as ts
-# x = ts.testSystems(samples = 200000, systemType = "4.2_AKB")
-# embedding = 2
+import testSystems as ts
+x,d = ts.testSystems(samples = 200000, systemType = "4.1_AKB")
+embedding = 2
 
 from test_on_KAF import selectBestResultFromKafSearch
 
-folder = 'GridSearchEx'
+folder = 'GridSearch4.1'
+
 """ lorenz """
-# QKLMS_lorenz = 'QKLMS_lorenz_5000.csv'
-# params = selectBestResultFromKafSearch(folder + '/' + QKLMS_lorenz)
-
-# AKB_lorenz = 'QKLMS_AKB_lorenz_5000.csv'
-# params = selectBestResultFromKafSearch(folder + '/' + AKB_lorenz)
-
-AMK_lorenz = 'QKLMS_AMK_lorenz_5000.csv'
-params = selectBestResultFromKafSearch(folder + '/' + AMK_lorenz)
-
-# """ 4.2 """
-# QKLMS_42 = 'QKLMS_4.2_5000.csv'
-# params = selectBestResultFromKafSearch(folder + '/' + QKLMS_42)
-
-# AKB_42 = 'QKLMS_AKB_4.2_5000.csv'
-# params = selectBestResultFromKafSearch(folder + '/' + AKB_42)
-
-# AMK_42 = 'QKLMS_AMK_4.2_5000.csv'
-# params = selectBestResultFromKafSearch(folder + '/' + AMK_42)
+test = 'QKLMS_4.1_5000.csv'
+params = selectBestResultFromKafSearch(folder + '/' + test)
 
 
-fType='QKLMS_AMK'
+
+fType='QKLMS'
 inputSizeXrun = 5000
 trainSplit = 0.8
 
-MSE = MC_BestParameters(inputSignal=x, 
+MSE = MC_BestParameters(inputSignal=x,  
               monteCarloRuns=10, 
               singleRunDataSize=inputSizeXrun, 
               trainSplitPercentage=trainSplit,
               signalEmbedding=embedding,
               filterType=fType,
-              parameters=params,
-              lorenzTest=True,
-              y=y,
-              z=z)
+              parameters=params)
 
 import pandas as pd
 df = pd.DataFrame(MSE, columns=['MSE'])
-df.to_csv(folder + "/testingMSE_" + fType + "_4000-1000_lorenz.csv")
+df.to_csv(folder + "/testingMSE_" + fType + "_4000-1000_41.csv")
