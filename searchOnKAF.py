@@ -10,6 +10,9 @@ import numpy as np
 import argparse
 
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning) 
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--kaf', help='Filter to train')

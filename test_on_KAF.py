@@ -365,7 +365,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
                 u_train, u_test, d_train, d_test = trainAndTestSplitWithEmbedding(inputSignal, targetSignal,signalEmbedding, run, singleRunDataSize, trainLength)
             except:
                 u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, run, singleRunDataSize, trainLength)
-                u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, run, singleRunDataSize, trainLength)
+                # u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, run, singleRunDataSize, trainLength)
                 
             for p in tqdm(params):
                 try:
@@ -396,7 +396,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
         results_df['CB_size'] = results_df['CB_size'].astype(int)
         results_df['tradeOff_dist'] = tradeOff_distance
         
-        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')
+        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '_2' + '.csv')
         
         
         
@@ -453,7 +453,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
                 u_train, u_test, d_train, d_test = trainAndTestSplitWithEmbedding(inputSignal, targetSignal,signalEmbedding, run, singleRunDataSize, trainLength)
             except:
                 u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, run, singleRunDataSize, trainLength)
-                u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, run, singleRunDataSize, trainLength)
+                # u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, run, singleRunDataSize, trainLength)
                 
             for p in tqdm(params):
                 try:
@@ -484,7 +484,8 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
         results_df['CB_size'] = results_df['CB_size'].astype(int)
         results_df['tradeOff_dist'] = tradeOff_distance
         
-        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')
+        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '_2' + '.csv')
+        
     elif filterName == "QKLMS_AMK": 
         # 2.1. Generate parameters for QKLMS_AKB grid search
         import numpy as np
@@ -532,7 +533,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
                 u_train, u_test, d_train, d_test = trainAndTestSplitWithEmbedding(inputSignal, targetSignal,signalEmbedding, run, singleRunDataSize, trainLength)
             except:
                 u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, run, singleRunDataSize, trainLength)
-                u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, run, singleRunDataSize, trainLength)
+                # u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, run, singleRunDataSize, trainLength)
                         
             for p in tqdm(params):
                 try:
@@ -563,7 +564,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
         results_df['CB_size'] = results_df['CB_size'].astype(int)
         results_df['tradeOff_dist'] = tradeOff_distance
         
-        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')   
+        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) +  '_2' + '.csv')   
     else:
         raise ValueError("Filter does not exist")   
     return       
