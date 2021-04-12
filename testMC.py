@@ -16,22 +16,22 @@ import numpy as np
 
 # LORENZ ATTRACTOR
 
-# import TimeSeriesGenerator
-# x, y, z = TimeSeriesGenerator.chaoticSystem(samples=60000,systemType='lorenz')
-# embedding = 5
+import TimeSeriesGenerator
+x, y, z = TimeSeriesGenerator.chaoticSystem(samples=60000,systemType='wang')
+embedding = 5
 
 # SISTEMA 4.2
 
-import testSystems as ts
-x,d = ts.testSystems(samples = 200000, systemType = "4.1_AKB")
-embedding = 2
+# import testSystems as ts
+# x,d = ts.testSystems(samples = 200000, systemType = "4.1_AKB")
+# embedding = 2
 
 from test_on_KAF import selectBestResultFromKafSearch
 
-folder = 'GridSearch4.1'
+folder = 'GridSearchWang2'
 
 """ lorenz """
-test = 'QKLMS_4.1_5000.csv'
+test = 'QKLMS_wang_5000.csv'
 params = selectBestResultFromKafSearch(folder + '/' + test)
 
 
@@ -46,8 +46,10 @@ MSE = MC_BestParameters(inputSignal=x,
               trainSplitPercentage=trainSplit,
               signalEmbedding=embedding,
               filterType=fType,
-              parameters=params)
+              parameters=params,
+              ExTest=True,
+              y=y,z=z)
 
 import pandas as pd
 df = pd.DataFrame(MSE, columns=['MSE'])
-df.to_csv(folder + "/testingMSE_" + fType + "_4000-1000_41.csv")
+df.to_csv(folder + "/testingMSE_" + fType + "_4000-1000_wang.csv")

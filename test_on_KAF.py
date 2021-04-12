@@ -33,9 +33,13 @@ def MC_BestParameters(inputSignal, monteCarloRuns, singleRunDataSize, trainSplit
         d_test = np.array([inputSignal[i] for i in range(signalEmbedding+r*singleRunDataSize+trainLength,signalEmbedding+(r+1)*singleRunDataSize)]).reshape(-1,1)
         
         if ExTest:
-            u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, 0, singleRunDataSize, trainLength)
+            y -= y.mean()
+            y /= y.std()
+            z -= z.mean()
+            z /= z.std()
+            u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, r, singleRunDataSize, trainLength)
         else:
-            u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, 0, singleRunDataSize, trainLength)
+            u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, r, singleRunDataSize, trainLength)
             
             
         if filterType == 'QKLMS':
@@ -299,7 +303,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
     n_train = int(n_samples*trainSplit)
     n_test = n_samples - n_train
     
-    folder = 'GridSearchWang/'
+    folder = 'GridSearchWang2/'
     
     attractors = ['lorenz','wang', 'rossler', 'rikitake']
     
@@ -309,6 +313,10 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
         inputSignal, y, z = TimeSeriesGenerator.chaoticSystem(samples=(n_samples+signalEmbedding)*MC_runs,systemType=systemName)
         inputSignal -= inputSignal.mean()
         inputSignal /= inputSignal.std()
+        y -= y.mean()
+        y /= y.std()
+        z -= z.mean()
+        z /= z.std()
                
     elif systemName == "4.1":
         signalEmbedding = 5
@@ -400,7 +408,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
         results_df['CB_size'] = results_df['CB_size'].astype(int)
         results_df['tradeOff_dist'] = tradeOff_distance
         
-        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '_2' + '.csv')
+        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')
         
         
         
@@ -456,8 +464,8 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
             try:
                 u_train, u_test, d_train, d_test = trainAndTestSplitWithEmbedding(inputSignal, targetSignal,signalEmbedding, run, singleRunDataSize, trainLength)
             except:
-                u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, run, singleRunDataSize, trainLength)
-                # u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, run, singleRunDataSize, trainLength)
+                # u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, run, singleRunDataSize, trainLength)
+                u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, run, singleRunDataSize, trainLength)
                 
             for p in tqdm(params):
                 try:
@@ -488,7 +496,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
         results_df['CB_size'] = results_df['CB_size'].astype(int)
         results_df['tradeOff_dist'] = tradeOff_distance
         
-        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '_2' + '.csv')
+        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')
         
     elif filterName == "QKLMS_AMK": 
         # 2.1. Generate parameters for QKLMS_AKB grid search
@@ -568,7 +576,7 @@ def kafSearch_MC(filterName,systemName,n_samples,trainSplit,MC_runs):
         results_df['CB_size'] = results_df['CB_size'].astype(int)
         results_df['tradeOff_dist'] = tradeOff_distance
         
-        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) +  '_2' + '.csv')   
+        results_df.to_csv(folder + filterName + '_' + systemName + '_' + str(n_samples) + '.csv')   
     else:
         raise ValueError("Filter does not exist")   
     return       
@@ -640,4 +648,25 @@ def selectBestResultFromKafSearch(resultsDataFrame):
     import pandas as pd
     results = pd.read_csv(resultsDataFrame).dropna(axis=0) 
     return results[results.tradeOff_dist == results.tradeOff_dist.min()].iloc[0]
+
+def codebook4KAF(inputSignal, signalEmbedding, N, trainSplit, gridSearchPath, filterType,ExTest=False,y=None,z=None):
+    parameters = selectBestResultFromKafSearch(gridSearchPath)
+    
+    if ExTest:
+        u_train, u_test, d_train, d_test = customExogenousEmbeddingForKAFs(inputSignal, y, z, signalEmbedding, 0, len(inputSignal), int(len(inputSignal)*trainSplit))
+    else:
+        u_train, u_test, d_train, d_test = customEmbeddingForKAFs(inputSignal, signalEmbedding, 0, N, int(N*trainSplit))
+    
+    import KAF
+    
+    if filterType == 'QKLMS':
+        kafFilter = KAF.QKLMS(sigma=parameters['sigma'],epsilon=parameters['epsilon'],eta=parameters['eta'])
+    elif filterType == 'QKLMS_AKB':
+        kafFilter = KAF.QKLMS_AKB(sigma_init=parameters['sigma_init'],epsilon=parameters['epsilon'],eta=parameters['eta'],mu=parameters['mu'], K=int(parameters['K']))
+    elif filterType == 'QKLMS_AMK':         
+        kafFilter = KAF.QKLMS_AMK(epsilon=parameters['epsilon'],eta=parameters['eta'],mu=parameters['mu'], Ka=int(parameters['K']),A_init="pca")
+        kafFilter.evaluate(u_train[:100],d_train[:100])
+    
+    kafFilter.evaluate(u_train,d_train)
+    return [filterType, len(kafFilter.CB)]
     

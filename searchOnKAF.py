@@ -4,8 +4,6 @@ Created on Mon Mar  1 11:01:38 2021
 
 @author: Juan David
 """
-
-
 import numpy as np
 import argparse
 
@@ -41,4 +39,4 @@ if __name__ == "__main__":
 
 
 # from test_on_KAF import kafSearch_MC
-# kafSearch_MC("QKLMS", "4.1", 100, 0.8,5)
+# kafSearch_MC("QKLMS", "wang", 100, 0.8,10)
