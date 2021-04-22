@@ -58,8 +58,6 @@ def testSystems(samples = 1000, systemType = None):
         d = np.cos(8*u) + noise
         return u,d
         
-        # return s   
-# >>>>>>> 2368572f4cfb5e65163471f47418ba79745581a8
     
 
     

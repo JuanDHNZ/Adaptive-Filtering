@@ -1030,16 +1030,14 @@ class QKLMS:
             self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
             y.append(yi.item())
             yt.append(di.item())
-            # self.mse.append(mean_squared_error(yt,y[1:]))
-            # self.mse_ins.append(mean_squared_error(di,yi))
-        return y
+        return np.array(y)
 
     def __output(self,ui):
         from scipy.spatial.distance import cdist
         import numpy as np
         dist = cdist(np.asarray(self.CB), ui)
         K = np.exp(-0.5*(dist**2)/(self.sigma**2))
-        y = K .T.dot(np.asarray(self.a_coef))
+        y = K .T.dot(np.asarray(self.a_coef))[0]
         return [y,dist]
     
     def predict(self,u):
@@ -1060,6 +1058,111 @@ class QKLMS:
         # errp: Error a priori 
         self.eta = (2*errp*y)/(errp**2 + 1)
         return False
+    
+class QKLMS_v2:
+    """B. Chen, S. Zhao, P. Zhu and J. C. Principe, "Quantized Kernel Least 
+    Mean Square Algorithm," in IEEE Transactions on Neural Networks and 
+    Learning Systems, vol. 23, no. 1, pp. 22-32, Jan. 2012, 
+    doi: 10.1109/TNNLS.2011.2178446."""
+    
+    def __init__(self, eta=0.9, epsilon=10, sigma=None):
+        self.eta = eta # Learning rate
+        self.epsilon = epsilon # Quatization threshold
+        self.sigma = sigma #Kernel bandwidth
+        self.CB = [] # Codebook
+        self.a_coef = [] # Weights
+        self.CB_growth = [] 
+        self.initialize = True #Initialization flag 
+             
+    def fit(self, X, y):
+        import numpy as np
+        # Shapes validation
+        if len(X.shape) == 2: 
+            if X.shape[0]!= y.shape[0]:
+                raise ValueError('X and y must be of the same lenght')
+        elif len(y.shape) == 1:
+            X = X.reshape(1,-1)
+            y = y.reshape(1,-1)
+        else:
+            raise ValueError('Unsupported input shapes on X shape ->{} and y shape -> {}'.format(X.shape,y.shape))
+        
+        # Sigma determined by the median criterion if not provided
+        if self.sigma == None:
+            from scipy.spatial.distance import cdist
+       	    self.sigma = np.median(cdist(X,X))    
+        #X shapes
+        N,D = X.shape
+        
+        #Initialization
+        if self.initialize:
+            self.CB.append(X[0]) #Codebook
+            self.a_coef.append(self.eta*y[0]) #Coeficientes
+            start = 1
+            self.initialize = False
+            if X.shape[0] == 1:                
+                return
+        else:
+            start = 0      
+        
+        # Gaussian kernel between codebook and new sample
+        dist =  lambda CB,xi : np.array([np.linalg.norm(x-xi) for x in CB]).reshape(-1,1)
+        gK = lambda dist : np.array(np.exp(-(dist)**2/(2*self.sigma**2))).astype(np.float64).reshape(-1,)
+        
+        from tqdm import tqdm
+        for i in tqdm(range(start,len(X))):
+            xi = X[i].reshape(1,-1)
+            yi = y[i]
+            
+            # prediction
+            disti = dist(self.CB,xi)
+            K = gK(disti)
+            y_predi = K.T@self.a_coef
+            err = yi - y_predi# Error
+            
+            #Quantization
+            min_index = np.argmin(disti)
+            if disti[min_index] <= self.epsilon:
+              self.a_coef[min_index] = self.a_coef[min_index] + self.eta*err
+            else:
+              self.CB.append(X[i])
+              self.a_coef.append(self.eta*err) 
+            self.CB_growth.append(len(self.CB))
+        return
+    
+    # PENDIENTE
+    def predict(self, X):
+        import numpy as np
+        y_pred = []
+        dist =  lambda CB,xi : np.array([np.linalg.norm(x-xi) for x in CB]).reshape(-1,1)
+        gK = lambda dist : np.array(np.exp(-(dist)**2/(2*self.sigma**2))).astype(np.float64).reshape(-1,)
+        
+        from tqdm import tqdm
+        for i in tqdm(range(len(X))):
+            xi = X[i].reshape(1,-1)        
+            K = gK(dist(self.CB,xi))
+            y_pred.append(K.T@self.a_coef)
+        return np.array(y_pred) 
+
+    
+    def score(self, X=None, y=None):
+        #Validaciones
+        if X is None:
+            raise ValueError("X is missing")
+        if y is None:
+            raise ValueError("y is missing")
+        if len(X) != len(y):
+            raise ValueError("All input arguments must be the same lenght, X shape is {0} and y shape is {1}".format(X.shape, y.shape))
+                
+        from sklearn.metrics import r2_score
+        return r2_score(y,self.predict(X))
+    
+    def get_params(self, deep=True):
+        return {"eta": self.eta,"epsilon": self.epsilon,"sigma": self.sigma}
+
+    def set_params(self, **parameters):
+        for parameter, value in parameters.items():
+            setattr(self, parameter, value)
+        return self
 
 class KRLS_ALD:
     """Y. Engel, S. Mannor and R. Meir, "The kernel recursive least-squares 
@@ -1585,6 +1688,224 @@ class ALDKRLS_AKB_2:
 
 
 class QKLMS_AMK:
+    """
+    QKLMS with Adaptive Mahalanobis Kernel
+
+    """
+    def __init__(self, eta=0.9, epsilon=10, sigma=None, mu = 0.05, Ka=10, embedding=5, A_init="pca"):
+        self.eta = eta #Learning rate
+        self.epsilon = epsilon #Umbral de cuantizacion
+        self.sigma = sigma #Ancho de banda
+        self.mu = mu
+        self.Ka = Ka
+        self.embedding = embedding
+        
+        self.et = [] #Error total 
+        self.Ak = []
+        self.CB = [] #Codebook
+        self.a_coef = [] #Coeficientes
+        self.CB_growth = [] #Crecimiento del codebook por iteracion
+        self.initialize = True #Bandera de inicializacion 
+        self.A_init = A_init
+        self.scoring = False
+        
+    def evaluate(self, X , y):
+        u,d = self.embedder(X,y)
+        import numpy as np
+        if len(u.shape) == 2:
+            if u.shape[0]!=d.shape[0]:
+                raise ValueError('All of the input arguments must be of the same lenght')
+        else:
+            if len(u.shape) == 1:
+                u = u.reshape(1,-1)
+                d = d.reshape(1,-1)
+        N,D = u.shape
+        Nd,Dd = d.shape
+               
+        #Inicializaciones
+        y = []
+        if self.initialize:
+            self.CB.append(u[0,:]) #Codebook
+            self.a_coef.append(self.eta*d[0,:]) #Coeficientes
+            
+            if self.A_init == "diag":
+                self.A0 = np.eye(D)/self.sigma #Matriz de proyeccion
+            elif self.A_init == "pca":
+                from sklearn.decomposition import PCA
+                pca = PCA(n_components=2).fit(u[:100,:])
+                self.A0 = pca.components_            
+        
+            start = 1
+            self.Ak.append(self.A0)
+            self.A = self.A0
+            self.initialize = False
+            # err = 0.1
+            y.append(0)
+        else:
+            start = 0
+         
+        from sklearn.metrics import mean_squared_error
+        yt = []
+        self.mse = []
+        self.mse_ins = []
+        from tqdm import tqdm
+        #for i in tqdm(range(start,len(u))):
+        for i in range(start,len(u)):
+            ui = u[i]
+            di = d[i]
+            yi,dis,K = self.__output(ui.reshape(-1,D) ) #Salida             
+            e = (di - yi).item() # Error
+            y.append(yi.item())# Salida
+            
+            #Cuantizacion
+            min_dis = np.argmin(dis)         
+            if dis[min_dis] <= self.epsilon:
+              self.a_coef[min_dis] = self.a_coef[min_dis] + self.eta*e
+            else:
+                S = len(self.CB)
+                if S >= self.Ka:                  
+                    for i in range(self.Ka):
+                        da = 0
+                        for j in range(S-self.Ka,S):
+                              da += self.a_coef[j]*K[j]*(self.CB[j].reshape(1,-1) - ui.reshape(1,-1)).T.dot((self.CB[j].reshape(1,-1) - ui.reshape(1,-1)))
+                        da = e*self.Ak[i]@da
+                        nda = np.linalg.norm(da,"fro")
+                        na = np.linalg.norm(self.Ak[i],"fro")
+                        self.Ak[i] -= self.mu*(da/nda)*na                                                          
+                else:
+                    self.Ak.append(self.A0.copy())
+            
+                self.CB.append(ui)
+                self.a_coef.append(self.eta*e)                 
+                self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
+        return y
+
+    def __output(self,ui):
+        from scipy.spatial.distance import cdist
+        import numpy as np
+        d = cdist(self.CB, ui.reshape(1,-1),'mahalanobis', VI=np.dot(self.A.T,self.A))    
+        K = np.exp(-0.5*(d**2))
+        y = K.T.dot(np.asarray(self.a_coef))
+        return y,d,K
+    
+    def fit(self, X , y):
+        u,d = self.embedder(X,y)
+        import numpy as np
+        if len(u.shape) == 2:
+            if u.shape[0]!=d.shape[0]:
+                raise ValueError('All of the input arguments must be of the same lenght')
+        else:
+            if len(u.shape) == 1:
+                u = u.reshape(1,-1)
+                d = d.reshape(1,-1)
+        N,D = u.shape
+        Nd,Dd = u.shape
+               
+        #Inicializaciones
+        y = []
+        if self.initialize:
+            self.CB.append(u[0,:]) #Codebook
+            self.a_coef.append(self.eta*d[0,:]) #Coeficientes
+            
+            if self.A_init == "diag":
+                self.A0 = np.eye(D)/self.sigma #Matriz de proyeccion
+            elif self.A_init == "pca":
+                from sklearn.decomposition import PCA
+                pca = PCA(n_components=1).fit(u[:100,:])
+                self.A0 = pca.components_            
+        
+            start = 1
+            self.Ak.append(self.A0)
+            self.A = self.A0
+            self.initialize = False
+            
+            y.append(0)
+        else:
+            start = 0
+         
+        from sklearn.metrics import mean_squared_error
+        
+        yt = []
+        self.mse = []
+        self.mse_ins = []
+        from tqdm import tqdm
+        #for i in tqdm(range(start,len(u))):
+        for i in range(start,len(u)):
+            ui = u[i]
+            di = d[i]
+            yi,dis,K = self.__output(ui.reshape(-1,D) ) #Salida             
+            e = (di - yi).item() # Error
+         
+            #Cuantizacion
+            min_dis = np.argmin(dis)         
+            if dis[min_dis] <= self.epsilon:
+              self.a_coef[min_dis] = self.a_coef[min_dis] + self.eta*e
+            else:
+                S = len(self.CB)
+                if S >= self.Ka:                  
+                    for i in range(self.Ka):
+                        da = 0
+                        for j in range(S-self.Ka,S):
+                              da += self.a_coef[j]*K[j]*(self.CB[j].reshape(1,-1) - ui.reshape(1,-1)).T.dot((self.CB[j].reshape(1,-1) - ui.reshape(1,-1)))
+                        da = e*self.Ak[i]@da
+                        nda = np.linalg.norm(da,"fro")
+                        na = np.linalg.norm(self.Ak[i],"fro")
+                        self.Ak[i] -= self.mu*(da/nda)*na                                                          
+                else:
+                    self.Ak.append(self.A0.copy())
+            
+                self.CB.append(ui)
+                self.a_coef.append(self.eta*e)                 
+                self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
+        return
+    
+    def predict(self,X):
+        X = self.embedder(X)
+        from scipy.spatial.distance import cdist
+        import numpy as np
+        y = []
+        for i in range(len(X)):
+            ui = X[i]
+            d = cdist(self.CB, ui.reshape(1,-1),'mahalanobis', VI=np.dot(self.A.T,self.A))    
+            K = np.exp(-0.5*(d**2))
+            y.append((K.T.dot(np.asarray(self.a_coef))).item())
+        return np.array(y)
+    
+    def score(self, X=None, y=None):
+        X,y = self.embedder(X,y)
+        self.scoring = True
+        #Validaciones
+        if X is None:
+            raise ValueError("X is missing")
+        if y is None:
+            raise ValueError("y is missing")
+        if len(X) != len(y):
+            raise ValueError("All input arguments must be the same lenght, X shape is {0} and y shape is {1}".format(X.shape, y.shape))
+                
+        from sklearn.metrics import r2_score
+        return r2_score(y,self.predict(X).reshape(-1,1))
+    
+    def get_params(self, deep=True):
+        return {"eta": self.eta,"epsilon": self.epsilon,"mu": self.mu, "Ka": self.Ka, "embedding": self.embedding}
+
+    def set_params(self, **parameters):
+        for parameter, value in parameters.items():
+            setattr(self, parameter, value)
+        return self
+    
+    def embedder(self, X, y=None):
+        import numpy as np
+        if not self.scoring:
+            X = np.array([X[i-self.embedding:i] for i in range(self.embedding,len(X))])
+            if y is not None:
+                y = np.array([y[i] for i in range(self.embedding,len(y))]).reshape(-1,1)
+                return X,y
+            return X
+        else:
+            self.scoring = False
+            return X
+    
+class QKLMS_AMK_old:
     """
     QKLMS with Adaptive Mahalanobis Kernel
     
