@@ -86,12 +86,14 @@ folds = 10
 for param in param_list:
     fold = 0
     kf = KFold(n_splits=10)
+    r2_temporal = []
+    params_results = param.copy()
     for train_index, test_index in kf.split(Xdata,labels):
         #print("TRAIN:", train_index, "TEST:", test_index)
         X_train, X_test = Xdata[test_index], Xdata[train_index]
         N_train, N_test = Noise[test_index], Noise[train_index]
         y_train, y_test = labels[test_index], labels[train_index]
-        
+               
         f = QKLMS_AMK()
         f.set_params(**param)
         
@@ -106,20 +108,14 @@ for param in param_list:
                     print('Nan')
         r2 = np.array(r2)
         r2m = np.mean(np.where(r2>-1,r2,-1))
-        param['r2_'+str(fold)]
-        
+        r2_temporal.append(r2m)
+        params_results['split'+str(fold)+'_r2']  = r2m
+        fold += 1
+    params_results['r2_mean'] = np.array(np.mean(r2_temporal))
+    params_results['r2_std'] = np.array(np.std(r2_temporal))   
+    results.append(params_results)
+    results.to_csv("searchAMK.csv")
     
-    
-#Terminar de organizar
-
-
-
-
-# cv_results = search.cv_results_
-
-# cv_results = pd.DataFrame.from_dict(cv_results)
-# cv_results.to_csv("random_sarch_t0_c0.csv")
-
   
 
 
