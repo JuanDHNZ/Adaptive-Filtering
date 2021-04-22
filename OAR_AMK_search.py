@@ -20,19 +20,19 @@ sns.set()
 
 
 # 1. Load raw BCI data
-parser = argparse.ArgumentParser(description='FBCSP -> MIBIF -> LDA.')
-parser.add_argument('--input',required=True, help='Input filename with path')
-parser.add_argument('--out',required=True, help='Input savename with path')
-#parser.add_argument('--fs',required=True, type=float, help='Input filename with path')
+# parser = argparse.ArgumentParser(description='FBCSP -> MIBIF -> LDA.')
+# parser.add_argument('--input',required=True, help='Input filename with path')
+# parser.add_argument('--out',required=True, help='Input savename with path')
+# #parser.add_argument('--fs',required=True, type=float, help='Input filename with path')
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
-filename = args.input
-savename = args.out
+# filename = args.input
+# savename = args.out
 
 #filename = r'G:\Shared drives\datasets\BCI\Competition IV\dataset 2a\Trials\NEW_22ch_A01.mat'
 # filename = r'G:\My Drive\Students\vigomez\Code_A1_Application\data_4C\BCI_s02train.mat'
-#filename = 'G:\My Drive\Code_A1_Application\data_4C\BCI_s01train.mat'
+filename = '..\data_4C\BCI_s01train.mat'
 
 data = sio.loadmat(filename)
 
@@ -81,10 +81,11 @@ param_dist = {'embedding':randint(5,10),
 param_list = list(ParameterSampler(param_dist, n_iter=50,
                                    random_state=np.random.RandomState(0)))
 
+results = []
+folds = 10
 for param in param_list:
-    
+    fold = 0
     kf = KFold(n_splits=10)
-    
     for train_index, test_index in kf.split(Xdata,labels):
         #print("TRAIN:", train_index, "TEST:", test_index)
         X_train, X_test = Xdata[test_index], Xdata[train_index]
@@ -104,29 +105,21 @@ for param in param_list:
                 except:
                     print('Nan')
         r2 = np.array(r2)
-        r2m = np.mean(r2[r2>-1])
+        r2m = np.mean(np.where(r2>-1,r2,-1))
+        param['r2_'+str(fold)]
+        
     
     
 #Terminar de organizar
 
-search = RandomizedSearchCV(f, param_distributions=param_dist,
-                            scoring='r2',
-                            n_iter=5,verbose=10,cv=5)
 
-search.fit(rn,rn)
 
-cv_results = search.cv_results_
 
-cv_results = pd.DataFrame.from_dict(cv_results)
-cv_results.to_csv("random_sarch_t0_c0.csv")
+# cv_results = search.cv_results_
 
-# for r in range(49):
-#   X, y = embedderForSearch(rn[], signalEmbedding, channel, singleRunDataSize)
-#   search.fit(Xdata,labels)
-#   r_results = search.cv_results_
-#   r_results = pd.DataFrame.from_dict(r_results)
-#   cv_results=cv_results.append(r_results)  
-#   cv_results.to_csv(savename)
+# cv_results = pd.DataFrame.from_dict(cv_results)
+# cv_results.to_csv("random_sarch_t0_c0.csv")
+
   
 
 
