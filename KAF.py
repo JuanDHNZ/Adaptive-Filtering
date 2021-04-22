@@ -1709,7 +1709,7 @@ class QKLMS_AMK:
         self.A_init = A_init
         self.scoring = False
         
-    def evaluate(self, X , y):
+    def evaluate(self, X , y):        
         u,d = self.embedder(X,y)
         import numpy as np
         if len(u.shape) == 2:
@@ -1872,8 +1872,9 @@ class QKLMS_AMK:
         return np.array(y)
     
     def score(self, X=None, y=None):
-        X,y = self.embedder(X,y)
-        self.scoring = True
+        import numpy as np
+        _,y_true = self.embedder(X,y)        
+        #self.scoring = True
         #Validaciones
         if X is None:
             raise ValueError("X is missing")
@@ -1883,7 +1884,7 @@ class QKLMS_AMK:
             raise ValueError("All input arguments must be the same lenght, X shape is {0} and y shape is {1}".format(X.shape, y.shape))
                 
         from sklearn.metrics import r2_score
-        return r2_score(y,self.predict(X).reshape(-1,1))
+        return r2_score(y_true,np.array(self.evaluate(X,y)).reshape(-1,1))
     
     def get_params(self, deep=True):
         return {"eta": self.eta,"epsilon": self.epsilon,"mu": self.mu, "Ka": self.Ka, "embedding": self.embedding}
