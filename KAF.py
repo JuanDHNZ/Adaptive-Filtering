@@ -1710,7 +1710,7 @@ class QKLMS_AMK:
         self.scoring = False
         
     def evaluate(self, X , y):        
-        u,d = self.embedder(X,y)
+        u,d = self.embedder(X,y)        
         import numpy as np
         if len(u.shape) == 2:
             if u.shape[0]!=d.shape[0]:
@@ -1726,7 +1726,8 @@ class QKLMS_AMK:
         y = []
         if self.initialize:
             self.CB.append(u[0,:]) #Codebook
-            self.a_coef.append(self.eta*d[0,:]) #Coeficientes
+            #self.a_coef.append(self.eta*d[0,:]) #Coeficientes
+            self.a_coef = self.eta*d[0,:] #Coeficientes
             
             if self.A_init == "diag":
                 self.A0 = np.eye(D)/self.sigma #Matriz de proyeccion
@@ -1753,10 +1754,14 @@ class QKLMS_AMK:
         for i in range(start,len(u)):
             ui = u[i]
             di = d[i]
-            yi,dis,K = self.__output(ui.reshape(-1,D) ) #Salida             
+            yi,dis,K = self.output(ui.reshape(-1,D) ) #Salida             
             e = (di - yi).item() # Error
-            y.append(yi.item())# Salida
             
+            if np.any(np.isnan(yi)):
+                return 
+            
+            y.append(yi[0])# Salida                            
+                        
             #Cuantizacion
             min_dis = np.argmin(dis)         
             if dis[min_dis] <= self.epsilon:
@@ -1769,23 +1774,25 @@ class QKLMS_AMK:
                         for j in range(S-self.Ka,S):
                               da += self.a_coef[j]*K[j]*(self.CB[j].reshape(1,-1) - ui.reshape(1,-1)).T.dot((self.CB[j].reshape(1,-1) - ui.reshape(1,-1)))
                         da = e*self.Ak[i]@da
-                        nda = np.linalg.norm(da,"fro")
+                        nda = np.linalg.norm(da,"fro") + np.finfo(float).eps
                         na = np.linalg.norm(self.Ak[i],"fro")
                         self.Ak[i] -= self.mu*(da/nda)*na                                                          
                 else:
                     self.Ak.append(self.A0.copy())
             
                 self.CB.append(ui)
-                self.a_coef.append(self.eta*e)                 
+                #self.a_coef.append(self.eta*e)                 
+                self.a_coef = np.hstack((self.a_coef,self.eta*e))
                 self.CB_growth.append(len(self.CB)) #Crecimiento del diccionario 
         return y
 
-    def __output(self,ui):
+    def output(self,ui):
         from scipy.spatial.distance import cdist
         import numpy as np
         d = cdist(self.CB, ui.reshape(1,-1),'mahalanobis', VI=np.dot(self.A.T,self.A))    
         K = np.exp(-0.5*(d**2))
         y = K.T.dot(np.asarray(self.a_coef))
+                
         return y,d,K
     
     def fit(self, X , y):
@@ -1833,7 +1840,8 @@ class QKLMS_AMK:
         for i in range(start,len(u)):
             ui = u[i]
             di = d[i]
-            yi,dis,K = self.__output(ui.reshape(-1,D) ) #Salida             
+            print(ui.shape,len(self.a_coef))
+            yi,dis,K = self.output(ui.reshape(-1,D) ) #Salida             
             e = (di - yi).item() # Error
          
             #Cuantizacion
@@ -1884,7 +1892,7 @@ class QKLMS_AMK:
             raise ValueError("All input arguments must be the same lenght, X shape is {0} and y shape is {1}".format(X.shape, y.shape))
                 
         from sklearn.metrics import r2_score
-        return r2_score(y_true,np.array(self.evaluate(X,y)).reshape(-1,1))
+        return r2_score(y_true,np.array(self.evaluate(X,y),dtype=float).reshape(-1,1))
     
     def get_params(self, deep=True):
         return {"eta": self.eta,"epsilon": self.epsilon,"mu": self.mu, "Ka": self.Ka, "embedding": self.embedding}
