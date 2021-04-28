@@ -6,8 +6,9 @@ Created on Mon Apr 12 09:09:36 2021
 """
 
 class artifactRemoval():
-    def __init__(self, th = 0.1):
+    def __init__(self, filter_parameters, th = 0.1):
         self.th = th
+        self.params = filter_parameters
         return 
     
     def set_params(self, th):
@@ -87,13 +88,13 @@ class artifactRemoval():
         
         
 class artifact_removal_with_AMK:
-    def __init__(self, th=0.1, embedding=5, eta=0.9, epsilon=0.1, mu=0.1, K=1):
+    def __init__(self, filter_parameters, th = 0.1):
+        self.embedding = filter_parameters['embedding']
+        self.eta = filter_parameters['eta']
+        self.epsilon = filter_parameters['epsilon']
+        self.mu = filter_parameters['mu']
+        self.Ka = filter_parameters['Ka']
         self.th = th
-        self.embedding = embedding
-        self.eta = eta
-        self.epsilon = epsilon
-        self.mu = mu
-        self.K = K
         return 
     
     def set_params(self, th):
@@ -152,17 +153,16 @@ class artifact_removal_with_AMK:
         
     def singleChannelNoiseRemoval(self, X, r):
         import numpy as np
-        signalEmbedding = 5
-        r_em = np.array([r[i-signalEmbedding:i] for i in range(signalEmbedding,len(r))])
-        X_em = np.array([X[i] for i in range(signalEmbedding,len(r))]).reshape(-1,1)
-        if np.sum(r_em) != 0.0:
-            from KAF import QKLMS_AMK
-            f = QKLMS_AMK(embedding=self.embedding, eta=self.eta, epsilon=self.epsilon, mu=self.mu, K=self.K)
-            f.evaluate(r_em[:100],X_em[:100]) # Evaluation for PCA initialization
-            v = f.evaluate(r_em,X_em) 
-            return X_em.ravel() - v.ravel()  
+        from KAF import QKLMS_AMK
+        f = QKLMS_AMK(embedding=int(self.embedding), eta=self.eta, epsilon=self.epsilon, mu=self.mu, Ka=int(self.Ka))
+        _,X_ = f.embedder(r,X)
+        
+        if np.sum(r) != 0.0:
+            f.evaluate(r[:100],X[:100]) # Evaluation for PCA initialization
+            v = np.array(f.evaluate(r,X))
+            return X_.ravel() - v.ravel()  
         else:
-            return X_em.ravel()
+            return X_.ravel()
         
 
     

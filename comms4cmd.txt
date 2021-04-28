@@ -1,0 +1,14 @@
+## Filtering BCI.mat
+python OAR.py --subject 1 --input_file "..\data_4C\BCI_s01train.mat" --params_file "..\data_4C\\best_params_for_KAF.csv" --th 0.976930899214176 --output_file "..\data_4C\filteredBCI\fBCI_s01train.mat" & python OAR.py --subject 5 --input_file "..\data_4C\BCI_s05train.mat" --params_file "..\data_4C\\best_params_for_KAF.csv" --th 1.001139939 --output_file "..\data_4C\filteredBCI\fBCI_s05train.mat" & python OAR.py --subject 6 --input_file "..\data_4C\BCI_s06train.mat" --params_file "..\data_4C\\best_params_for_KAF.csv" --th 1.87780244517393 --output_file "..\data_4C\filteredBCI\fBCI_s06train.mat" & python OAR.py --subject 7 --input_file "..\data_4C\BCI_s07train.mat" --params_file "..\data_4C\\best_params_for_KAF.csv" --th 1.95958410708348 --output_file "..\data_4C\filteredBCI\fBCI_s07train.mat" & python OAR.py --subject 8 --input_file "..\data_4C\BCI_s08train.mat" --params_file "..\data_4C\\best_params_for_KAF.csv" --th 2.70292197336267 --output_file "..\data_4C\filteredBCI\fBCI_s08train.mat" & python OAR.py --subject 9 --input_file "..\data_4C\BCI_s09train.mat" --params_file "..\data_4C\\best_params_for_KAF.csv" --th 2.89178260919388 --output_file "..\data_4C\filteredBCI\fBCI_s09train.mat" 
+
+## Pipeline for filtered BCI.mat
+python jd_pipeline.py --input "..\data_4C\filteredBCI\fBCI_s01train.mat" --out "..\data_4C\filteredBCI\pipelineResults.csv"
+
+python jd_pipeline.py --input "..\data_4C\filteredBCI\fBCI_s05train.mat" --out "..\data_4C\filteredBCI\pipelineResults_s05train.csv"
+
+python jd_pipeline.py --input "..\data_4C\filteredBCI\fBCI_s07train.mat" --out "..\data_4C\filteredBCI\pipelineResults_s07train.csv" & python jd_pipeline.py --input "..\data_4C\filteredBCI\fBCI_s08train.mat" --out "..\data_4C\filteredBCI\pipelineResults_s08train.csv" & python jd_pipeline.py --input "..\data_4C\filteredBCI\fBCI_s09train.mat" --out "..\data_4C\filteredBCI\pipelineResults_s09train.csv"
+
+
+python jd_pipeline.py --input "..\data_4C\BCI_s08train.mat" --out "..\data_4C\pipelineResults\BCI_s08train.csv" & python jd_pipeline.py --input "..\data_4C\BCI_s07train.mat" --out "..\data_4C\pipelineResults\BCI_s07train.csv" & python jd_pipeline.py --input "..\data_4C\BCI_s09train.mat" --out "..\data_4C\pipelineResults\BCI_s09train.csv"
+
+python jd_pipeline.py --input "..\data_4C\BCI_s05train.mat" --out "..\data_4C\pipelineResults\BCI_s05train.csv"
