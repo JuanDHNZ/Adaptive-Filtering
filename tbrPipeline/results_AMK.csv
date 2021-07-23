@@ -1,0 +1,26 @@
+,mean_fit_time,std_fit_time,mean_score_time,std_score_time,param_pp__th,param_pp__filter_parameters,param_extract__fs,params,split0_test_score,split1_test_score,split2_test_score,split3_test_score,split4_test_score,mean_test_score,std_test_score,rank_test_score,split0_train_score,split1_train_score,split2_train_score,split3_train_score,split4_train_score,mean_train_score,std_train_score
+0,24.642162704467772,4.6544393265810085,3.359080743789673,2.0974051768498847,0.194949494949494,"SingleBlockManager
+Items: Index(['Unnamed: 0', 'Ka', 'embedding', 'epsilon', 'eta', 'mu', 'split0_r2',
+       'split1_r2', 'split2_r2', 'split3_r2', 'split4_r2', 'split5_r2',
+       'split6_r2', 'split7_r2', 'split8_r2', 'split9_r2', 'r2_mean',
+       'r2_std'],
+      dtype='object')
+FloatBlock: 18 dtype: float64",250,"{'pp__th': 0.194949494949494, 'pp__filter_parameters': Unnamed: 0    38.000000
+Ka             5.000000
+embedding      5.000000
+epsilon        1.293311
+eta            0.339962
+mu             0.510026
+split0_r2      0.719119
+split1_r2      0.892053
+split2_r2      0.566470
+split3_r2      0.555589
+split4_r2      0.523629
+split5_r2      0.661541
+split6_r2      0.736393
+split7_r2      0.670432
+split8_r2      0.808744
+split9_r2      0.466222
+r2_mean        0.660019
+r2_std         0.126969
+Name: 38, dtype: float64, 'extract__fs': 250}",,,0.20164609053497948,,,,,1,1.2822216537852749,0.7875098972369033,1.0140349161328184,1.7582393623236474,1.5110054926773906,1.2706022644312067,0.3449416475450224

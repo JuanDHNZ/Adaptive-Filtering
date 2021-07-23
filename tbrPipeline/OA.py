@@ -185,10 +185,10 @@ class artifact_removal_with_MAC:
             setattr(self, parameter, value)
         return self
     
-    def fit(self,X,y): 
+    def fit(self,X,y):
         from mac import MAC
-        self.mac = MAC(th=self.th)
-        self.mac.fit(X,y)
+        mac_ = MAC(th=self.th)
+        self.noise_est = mac_.fit_transform(X,y)
         return
     
     def transform(self, X):
@@ -204,9 +204,7 @@ class artifact_removal_with_MAC:
     def __noise_removal(self, X_true):
         import numpy as np
         from tqdm import tqdm
-        from mac import MAC
-        noise_est = self.mac.transform(X_true)
-        return np.array([[self.__ch_noise_removal(rnc, Xnc) for rnc, Xnc in zip(rn,Xn)] for rn, Xn in tqdm(zip(noise_est ,X_true))])
+        return np.array([[self.__ch_noise_removal(rnc, Xnc) for rnc, Xnc in zip(rn,Xn)] for rn, Xn in tqdm(zip(self.noise_est ,X_true))])
         
     def __ch_noise_removal(self, noise_true, X_true):
         import numpy as np
@@ -226,17 +224,18 @@ class artifact_removal_with_MAC:
         
         
 class artifact_removal_MAC_AMK:
-    def __init__(self, filter_parameters = None, th = 0.1):
-        self.embedding = filter_parameters['embedding']
-        self.eta = filter_parameters['eta']
-        self.epsilon = filter_parameters['epsilon']
-        self.mu = filter_parameters['mu']
-        self.Ka = filter_parameters['Ka']
+    def __init__(self, filter_parameters, th = 0.1):
+        self.filter_params = filter_parameters
+        self.embedding =  self.filter_params['embedding']
+        self.eta =  self.filter_params['eta']
+        self.epsilon =  self.filter_params['epsilon']
+        self.mu =  self.filter_params['mu']
+        self.Ka =  self.filter_params['Ka']
         self.th = th
         return 
        
     def get_params(self, deep=True):
-        return {"th": self.th}
+        return {"th": self.th,"filter_parameters":self.filter_params}
 
     def set_params(self, **parameters):
         for parameter, value in parameters.items():

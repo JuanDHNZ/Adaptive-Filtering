@@ -185,10 +185,10 @@ class artifact_removal_with_MAC:
             setattr(self, parameter, value)
         return self
     
-    def fit(self,X,y): 
+    def fit(self,X,y):
         from mac import MAC
-        self.mac = MAC(th=self.th)
-        self.mac.fit(X,y)
+        mac_ = MAC(th=self.th)
+        self.noise_est = mac_.fit_transform(X,y)
         return
     
     def transform(self, X):
@@ -204,9 +204,7 @@ class artifact_removal_with_MAC:
     def __noise_removal(self, X_true):
         import numpy as np
         from tqdm import tqdm
-        from mac import MAC
-        noise_est = self.mac.transform(X_true)
-        return np.array([[self.__ch_noise_removal(rnc, Xnc) for rnc, Xnc in zip(rn,Xn)] for rn, Xn in tqdm(zip(noise_est ,X_true))])
+        return np.array([[self.__ch_noise_removal(rnc, Xnc) for rnc, Xnc in zip(rn,Xn)] for rn, Xn in tqdm(zip(self.noise_est ,X_true))])
         
     def __ch_noise_removal(self, noise_true, X_true):
         import numpy as np

@@ -9,6 +9,7 @@ import argparse
 import scipy.io as sio
 import numpy as np
 import pandas as pd
+import pickle
 from sklearn.model_selection import GridSearchCV,RandomizedSearchCV
 from sklearn.feature_selection import SelectFromModel,SelectKBest,mutual_info_classif
 # from fbcsp import FBCSP
@@ -23,34 +24,54 @@ from sklearn.metrics import cohen_kappa_score,make_scorer
 from adhd_theta_beta import Ratio_Theta_Beta
 from OA import artifact_removal
 
+#%%
+def labeler(subj):
+    if (subj.get('label') == 'Control'):
+        label = np.zeros(subj.get('smiley').shape[2])
+        
+    elif(subj.get('label') == 'tdah'):
+        label = np.ones(subj.get('smiley').shape[2])   
+    return label
 
+#%%
 #-----------------------------------------------------
 # 1 . Get both data and save paths
 
-parser = argparse.ArgumentParser(description='THETA_BETA_RATIO -> MIBIF -> SVC.')
-parser.add_argument('--input',required=True, help='Input filename with path')
-parser.add_argument('--out',required=True, help='Input savename with path')
+# parser = argparse.ArgumentParser(description='THETA_BETA_RATIO -> MIBIF -> SVC.')
+# parser.add_argument('--input',required=True, help='Input filename with path')
+# parser.add_argument('--out',required=True, help='Input savename with path')
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
-filename = args.input
-savename = args.out
+# filename = args.input
+# savename = args.out
 
-
-
-filename = "../data_4C/BCI_s05train.mat"
-savename = "../data_4C/BCI_s05trainTEST.csv"
 
 #-----------------------------------------------------
-# 2. Load data - PENDIENTE BASE DE DATOS CAMILA
+# PATHS ONLY FOR TESTING 
+filename = '../Dataset/adhd_Trial_reward_allchannels_hmm.pkl'
+savename = "../Dataset/test.csv"
 
-data = sio.loadmat(filename)
-Xdata = data['X']
-labels = data['labels'].reshape(-1,)
-fs = int(data['fs'].reshape(-1,))
-print('Loading',filename,'with sampling frequency of',fs,'Hz.')
-Xdata = np.transpose(Xdata,(2,1,0)) #trials x ch x time
+#-----------------------------------------------------
+# 2. Load data
 
+with open(filename,'rb') as f: 
+    DB = pickle.load(f) 
+
+x = [i for i in DB if (i.get('cond') == 'IC')]
+
+X_ = []
+labels_ = []
+
+for subj in x:
+    X_.append(subj.get('smiley'))
+    arr = labeler(subj)
+    labels_.append(arr)
+
+X = np.concatenate((X_), axis = 2)
+Xdata = np.transpose(X, [2,0,1])
+labels = np.concatenate((labels_))
+fs = 250
 
 #-----------------------------------------------------
 # 3. Pipeline definition
@@ -64,11 +85,11 @@ pipeline = Pipeline(steps = steps)
 
 threshold = 1.5
 
-param_dist = {'extract__fs':[fs],
+param_dist = {'clean__th': [threshold],
+              'extract__fs':[fs],
               'extract__nperseg':[0.5],
               'extract__window':['hann'],
-              'extract__noverlap':[0.5],
-              'clean__th': [threshold]
+              'extract__noverlap':[0.5]
               }
 
 kappa_corr = lambda target,output : (cohen_kappa_score(target,output)+1)/2
@@ -91,3 +112,4 @@ for r in range(49):
   r_results = pd.DataFrame.from_dict(r_results)
   cv_results=cv_results.append(r_results)  
   cv_results.to_csv(savename)
+

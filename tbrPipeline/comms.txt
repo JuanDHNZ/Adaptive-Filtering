@@ -1,0 +1,47 @@
+MAC pipeline:
+
+python mac_pipeline.py --input "../../data_4C/BCI_s01train.mat" --out "../../ResultsBCI/KLMS/th_search/sj1.csv" & python mac_pipeline.py --input "../../data_4C/BCI_s02train.mat" --out "../../ResultsBCI/KLMS/th_search/sj2.csv" & python mac_pipeline.py --input "../../data_4C/BCI_s03train.mat" --out "../../ResultsBCI/KLMS/th_search/sj3.csv" & python mac_pipeline.py --input "../../data_4C/BCI_s04train.mat" --out "../../ResultsBCI/KLMS/th_search/sj4.csv" & python mac_pipeline.py --input "../../data_4C/BCI_s05train.mat" --out "../../ResultsBCI/KLMS/th_search/sj5.csv" & python mac_pipeline.py --input "../../data_4C/BCI_s06train.mat" --out "../../ResultsBCI/KLMS/th_search/sj6.csv" & python mac_pipeline.py --input "../../data_4C/BCI_s07train.mat" --out "../../ResultsBCI/KLMS/th_search/sj7.csv" & python mac_pipeline.py --input "../../data_4C/BCI_s08train.mat" --out "../../ResultsBCI/KLMS/th_search/sj8.csv" & python mac_pipeline.py --input "../../data_4C/BCI_s09train.mat" --out "../../ResultsBCI/KLMS/th_search/sj9.csv"
+
+python mac_pipeline.py --input "../../data_4C/BCI_s01train.mat" --out "../../ResultsBCI/KLMS/th_search/sj1.csv" & python mac_pipeline.py --input "../../data_4C/BCI_s03train.mat" --out "../../ResultsBCI/KLMS/th_search/sj3.csv"
+
+
+Filtering subjects with MAC noise estimation and KLMS filter
+
+sj1
+python OAR_klms.py --input "../data_4C/BCI_s01train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s01train.mat" --th 0.366718288939383 & python OAR_klms.py --input "../data_4C/BCI_s01test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s01test.mat"  --th 0.366718288939383
+
+sj2
+
+python OAR_klms.py --input "../data_4C/BCI_s02train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s02train.mat" --th 0.366718288939383 & python OAR_klms.py --input "../data_4C/BCI_s02test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s02test.mat"  --th 0.366718288939383
+
+sj4
+
+python OAR_klms.py --input "../data_4C/BCI_s04train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s04train.mat" --th 0.620290609758368 & python OAR_klms.py --input "../data_4C/BCI_s04test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s04test.mat"  --th 0.620290609758368
+
+sj5
+
+python OAR_klms.py --input "../data_4C/BCI_s05train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s05train.mat" --th 0.87298693524929 & python OAR_klms.py --input "../data_4C/BCI_s05test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s05test.mat"  --th 0.87298693524929
+
+sj6
+
+python OAR_klms.py --input "../data_4C/BCI_s06train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s06train.mat" --th 0.486851654397371 & python OAR_klms.py --input "../data_4C/BCI_s06test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s06test.mat"  --th 0.486851654397371
+
+sj7
+
+python OAR_klms.py --input "../data_4C/BCI_s07train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s07train.mat" --th 0.594386406450527 & python OAR_klms.py --input "../data_4C/BCI_s07test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s07test.mat"  --th 0.594386406450527
+
+sj8
+
+python OAR_klms.py --input "../data_4C/BCI_s08train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s08train.mat" --th 0.691905361828586 & python OAR_klms.py --input "../data_4C/BCI_s08test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s08test.mat"  --th 0.691905361828586
+
+sj9
+
+python OAR_klms.py --input "../data_4C/BCI_s09train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s09train.mat" --th 0.53703984175155 & python OAR_klms.py --input "../data_4C/BCI_s09test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s09test.mat"  --th 0.53703984175155
+
+python OAR_klms.py --input "../data_4C/BCI_s07train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s07train.mat" --th 0.594386406450527 & python OAR_klms.py --input "../data_4C/BCI_s07test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s07test.mat"  --th 0.594386406450527 & python OAR_klms.py --input "../data_4C/BCI_s06train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s06train.mat" --th 0.486851654397371 & python OAR_klms.py --input "../data_4C/BCI_s06test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s06test.mat"  --th 0.486851654397371 & python OAR_klms.py --input "../data_4C/BCI_s08train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s08train.mat" --th 0.691905361828586 & python OAR_klms.py --input "../data_4C/BCI_s08test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s08test.mat"  --th 0.691905361828586 & python OAR_klms.py --input "../data_4C/BCI_s09train.mat" --out "../ResultsBCI/KLMS/klmsBCI_s09train.mat" --th 0.53703984175155 & python OAR_klms.py --input "../data_4C/BCI_s09test.mat" --out "../ResultsBCI/KLMS/klmsBCI_s09test.mat"  --th 0.53703984175155
+
+Clasification pipeline
+
+python jd_pipeline.py --input "../data_4C/BCI_s02train.mat" --out "../ResultsBCI/KLMS/sj2.csv" --th 0.366718288939383
+
+python jd_pipeline.py --input "../data_4C/BCI_s04train.mat" --out "../ResultsBCI/KLMS/sj4.csv" --th 0.620290609758368
